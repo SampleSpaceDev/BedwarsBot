@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "resolveJsonModule": true,
+        "module": "NodeNext",
+        "esModuleInterop": true,
+        "skipLibCheck": true
+    },
+    "exclude": ["node_modules"]
+}
