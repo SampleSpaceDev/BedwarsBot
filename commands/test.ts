@@ -1,5 +1,7 @@
-import { Command } from "./base.command.js";
+import { Command } from "./types/base";
 import { SlashCommandBuilder } from "@discordjs/builders";
+import { mojang } from "../services";
+import { interactions } from "../index";
 
 const command: Command = {
     data: new SlashCommandBuilder()
@@ -13,7 +15,13 @@ const command: Command = {
         )
         .toJSON(),
     execute: async (interaction) => {
-        console.log(interaction);
+        const options = interaction.data.options as { value: string }[];
+        const tag = options[0].value;
+
+        const player = await mojang.getPlayer(tag);
+        await interactions.reply(interaction.id, interaction.token, {
+            content: `\`${player.data.player.username}\` is \`${player.data.player.id}\``
+        });
     }
 }
 

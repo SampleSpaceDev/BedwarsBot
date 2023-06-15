@@ -43,7 +43,7 @@ export class MojangApiService {
 
             const error = e.response.data as PlayerDbErrorResponse;
             if (error.code === "minecraft.api_failure") {
-                throw new Error(tag);
+                throw new Error(`Unknown player: ${tag}`);
             }
 
             throw new Error();
@@ -52,7 +52,7 @@ export class MojangApiService {
 
     private parseTag(tag: string): [tag: string, type: string] {
         tag = tag.replace("-", "");
-        const type = tag.length >= 32 ? "uuid" : "username";
+        const type = tag.length >= 32 ? "uuid" : "name";
     
         return [tag, type];
     }
@@ -67,3 +67,5 @@ export class MojangApiService {
         return data;
     }
 }
+
+export default new MojangApiService();
