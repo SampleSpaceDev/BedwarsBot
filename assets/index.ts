@@ -23,5 +23,4 @@ export function drawShadowedText(ctx: CanvasRenderingContext2D, text: string, x:
 
     ctx.fillStyle = color;
     ctx.fillText(text, x, y);
-    ctx.fillStyle = "";
 }

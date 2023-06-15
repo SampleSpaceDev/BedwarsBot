@@ -4,8 +4,9 @@ import { mojang, hypixel } from "../services";
 import { interactions } from "../index";
 import { Bedwars } from "../services/types/bedwars";
 import { Canvas } from "skia-canvas";
-import { drawShadowedText, randomBackground } from "../assets";
-import {COLORS, SHADOWS, TITLES} from "../assets/constants";
+import { randomBackground } from "../assets";
+import { COLORS, TITLES } from "../assets/constants";
+import { CanvasWrapper } from "../util/canvas";
 
 const command: Command = {
     data: new SlashCommandBuilder()
@@ -28,13 +29,16 @@ const command: Command = {
 
         const canvas = new Canvas(500, 500);
         const ctx = canvas.getContext("2d");
+        const wrapper = new CanvasWrapper(ctx);
 
         const backgroundImage = await randomBackground("Bedwars");
         ctx.filter = 'blur(10px) brightness(50%)';
-        ctx.drawImage(backgroundImage, -500, -400, 1920, 1080);
-        ctx.filter = 'blur(0px)';
+        ctx.drawImage(backgroundImage, -710, -580, 1920, 1080);
+        ctx.filter = 'blur(0px) brightness(100%)';
 
         TITLES.Bedwars(ctx, { name: player.username, rankColor: COLORS.GOLD });
+
+        wrapper.drawText(`<#FFAA00>Level</#FFAA00>: <#FFFF00>`, 10, 150, true);
 
         ctx.font = "20px Minecraft";
         ctx.fillText(`Games Played: ${stats.games_played_bedwars.toLocaleString()}`, 10, 100);
