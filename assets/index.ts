@@ -1,7 +1,7 @@
-import { FontLibrary, loadImage, CanvasRenderingContext2D } from "skia-canvas";
+import { FontLibrary, loadImage } from "skia-canvas";
 import { readdirSync } from "node:fs";
 import logger from "../util/logging";
-import { SHADOWS } from "./constants";
+import axios from "axios";
 
 type Game = "Bedwars";
 
@@ -17,10 +17,15 @@ export async function registerFonts() {
     paths.forEach(path => logger.info(`[FONT] Font "${path.match(/\/([^/]+)\.[^/.]+$/)[1]}" was registered.`));
 }
 
-export function drawShadowedText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, color: string) {
-    ctx.fillStyle = SHADOWS[color];
-    ctx.fillText(text, x + 4, y + 4);
+export async function urlToBuffer(imageUrl: string) {
+    try {
+        const response = await axios.get(imageUrl, {
+            responseType: 'arraybuffer'
+        });
 
-    ctx.fillStyle = color;
-    ctx.fillText(text, x, y);
+        return Buffer.from(response.data, 'binary');
+    } catch (error) {
+        console.error('Error downloading the image:', error);
+        throw error;
+    }
 }

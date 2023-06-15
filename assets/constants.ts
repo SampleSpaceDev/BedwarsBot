@@ -39,18 +39,29 @@ export const SHADOWS = Object.freeze({
     WHITE: "#3F3F3F"
 });
 
+export const ITEMS = Object.freeze({
+    DIAMOND: "assets/minecraft/textures/item/diamond.png",
+    EMERALD: "assets/minecraft/textures/item/emerald.png",
+    IRON: "assets/minecraft/textures/item/iron_ingot.png",
+    GOLD: "assets/minecraft/textures/item/gold_ingot.png",
+    IRON_SWORD: "assets/minecraft/textures/item/iron_sword.png",
+    DIAMOND_SWORD: "assets/minecraft/textures/item/diamond_sword.png",
+    BARRIER: "assets/minecraft/textures/item/barrier.png",
+    BED: "assets/minecraft/textures/item/bed.png",
+});
+
 export const TITLES = Object.freeze({
     Bedwars: function(ctx: CanvasRenderingContext2D, player: { name: string, rankColor: string } ) {
-        let x = 0;
-        const titleWidth = ctx.measureText(player + "'s BedWars Stats").width;
-        const wrapper = new CanvasWrapper(ctx);
-
         ctx.font = "30px Minecraft";
-        ctx.fillStyle = player.rankColor;
+
+        const wrapper = new CanvasWrapper(ctx);
+        const x = ctx.canvas.width / 2 - wrapper.measure(`${player.name}'s BedWars Stats`) / 2;
+
+        wrapper.roundedRect(10, 10, ctx.canvas.width - 20, 40, COLORS.WHITE, 0.2);
 
         wrapper.drawText(
-            `<${player.rankColor}>${player.name}<\\${player.rankColor}>'s <${COLORS.RED}>Bed<\\${COLORS.RED}>Wars Stats`,
-            x, 50, true);
+            `<${player.rankColor}>${player.name}<\\${player.rankColor}><gray>'s</gray> <red>Bed<\red><white>Wars Stats</white>`,
+            x, 40, true);
     }
 });
 

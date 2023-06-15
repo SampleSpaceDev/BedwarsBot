@@ -8,6 +8,11 @@ interface Player {
     displayname: string;
     uuid: string;
     stats: Stats;
+    achievements: Achievements;
+}
+
+interface Achievements {
+    bedwars_level: number;
 }
 
 interface Stats {

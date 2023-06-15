@@ -12,9 +12,10 @@
     "@discordjs/rest": "^1.7.1",
     "@discordjs/ws": "^0.8.3",
     "axios": "^1.4.0",
+    "class-transformer": "^0.5.1",
     "discord-api-types": "^0.37.43",
+    "node-fetch": "^3.3.1",
     "skia-canvas": "^1.0.1",
-    "winston": "^3.9.0",
-    "xmldom": "^0.6.0"
+    "winston": "^3.9.0"
   }
 }
