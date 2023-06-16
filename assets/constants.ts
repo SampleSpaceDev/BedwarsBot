@@ -48,6 +48,7 @@ export const ITEMS = Object.freeze({
     DIAMOND_SWORD: "assets/minecraft/textures/item/diamond_sword.png",
     BARRIER: "assets/minecraft/textures/item/barrier.png",
     BED: "assets/minecraft/textures/item/bed.png",
+    FIREWORK: "assets/minecraft/textures/item/firework_rocket.png",
 });
 
 export const TITLES = Object.freeze({
