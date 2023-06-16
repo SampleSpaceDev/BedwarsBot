@@ -108,5 +108,5 @@ export function getLevelProgress(xp: number) : string {
 }
 
 export function getPrestigeProgress(level: number, xp: number) {
-    return `<gray>Progress to</gray> ${getPrestige(Math.ceil(level / 100) * 100)}<gray>:</gray> <green>${((xp % 487000) / 487000 * 100).toFixed(1)}</green><gray>%</gray>`;
+    return `<white>Progress to</white> ${getPrestige(Math.ceil(level / 100) * 100)}<gray>:</gray> <green>${((xp % 487000) / 487000 * 100).toFixed(1)}</green><gray>%</gray>`;
 }
