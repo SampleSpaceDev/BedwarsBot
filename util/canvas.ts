@@ -1,6 +1,6 @@
 import { COLORS, getShadowColor } from "../assets/constants";
 import { CanvasRenderingContext2D, loadImage } from "skia-canvas";
-import {urlToBuffer} from "../assets";
+import { urlToBuffer } from "../assets";
 
 type TextStyle = {
     color: string;
@@ -149,5 +149,9 @@ export class CanvasWrapper {
         this.ctx.lineTo(x + length, y);
         this.ctx.stroke();
         this.ctx.globalAlpha = 1;
+    }
+
+    public font(font: string) {
+        this.ctx.font = font;
     }
 }
