@@ -2,6 +2,8 @@ import { FontLibrary, loadImage } from "skia-canvas";
 import { readdirSync } from "node:fs";
 import logger from "../util/logging";
 import axios from "axios";
+import { unknownError } from "./constants";
+import { FeedbackMessage } from "../messages/error";
 
 type Game = "Bedwars";
 
@@ -17,15 +19,16 @@ export async function registerFonts() {
     paths.forEach(path => logger.info(`[FONT] Font "${path.match(/\/([^/]+)\.[^/.]+$/)[1]}" was registered.`));
 }
 
-export async function urlToBuffer(imageUrl: string) {
+export async function urlToBuffer(imageUrl: string) : Promise<Buffer | FeedbackMessage> {
     try {
         const response = await axios.get(imageUrl, {
-            responseType: 'arraybuffer'
+            responseType: 'arraybuffer',
+            timeout: 10_000
         });
 
         return Buffer.from(response.data, 'binary');
     } catch (error) {
         console.error('Error downloading the image:', error);
-        throw error;
+        return unknownError();
     }
 }
