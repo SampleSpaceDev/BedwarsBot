@@ -192,17 +192,18 @@ const calcDifferences = (session: Session, stats: Bedwars): Differences => {
 }
 
 const calcPerDay = (start: number, differences: Differences) => {
+    const daysSinceStart = Math.floor((Date.now() / 1000 - start) / 86400);
     return {
-        wins: differences.wins,
-        losses: differences.losses,
-        kills: differences.kills,
-        deaths: differences.deaths,
-        finalKills: differences.finalKills,
-        finalDeaths: differences.finalDeaths,
-        bedsBroken: differences.bedsBroken,
-        bedsLost: differences.bedsLost,
-        gamesPlayed: differences.gamesPlayed,
-        coins: differences.coins,
+        wins: Math.floor(differences.wins / daysSinceStart),
+        losses: Math.floor(differences.losses / daysSinceStart),
+        kills: Math.floor(differences.kills / daysSinceStart),
+        deaths: Math.floor(differences.deaths / daysSinceStart),
+        finalKills: Math.floor(differences.finalKills / daysSinceStart),
+        finalDeaths: Math.floor(differences.finalDeaths / daysSinceStart),
+        bedsBroken: Math.floor(differences.bedsBroken / daysSinceStart),
+        bedsLost: Math.floor(differences.bedsLost / daysSinceStart),
+        gamesPlayed: Math.floor(differences.gamesPlayed / daysSinceStart),
+        coins: Math.floor(differences.coins / daysSinceStart),
     };
 }
 
