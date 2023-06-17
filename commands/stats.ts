@@ -4,7 +4,7 @@ import { mojang, hypixel } from "../services";
 import { interactions } from "../index";
 import { Bedwars } from "../services/types";
 import { Canvas } from "skia-canvas";
-import { randomBackground } from "../assets";
+import {defaultCanvas, randomBackground} from "../assets";
 import { COLORS, ITEMS, TITLES } from "../assets/constants";
 import { CanvasWrapper } from "../util/canvas";
 import { getLevelProgress, getPrestige, getPrestigeProgress } from "../util/prestige";
@@ -40,19 +40,13 @@ const command: Command = {
             return;
         }
 
-        const canvas = new Canvas(500, 500);
-        const ctx = canvas.getContext("2d");
+        const ctx = await defaultCanvas("Bedwars");
         const wrapper = new CanvasWrapper(ctx);
-
-        const backgroundImage = await randomBackground("Bedwars");
-        ctx.filter = 'blur(10px) brightness(50%)';
-        ctx.drawImage(backgroundImage, -710, -580, 1920, 1080);
-        ctx.filter = 'blur(0px) brightness(100%)';
 
         TITLES.Stats(ctx, { name: profile.username, rankColor: hypixel.getRankColor(player) });
 
         ctx.font = "20px Minecraft, Arial";
-        wrapper.roundedRect(10, 60, canvas.width - 20, 55, COLORS.WHITE, 0.2);
+        wrapper.roundedRect(10, 60, ctx.canvas.width - 20, 55, COLORS.WHITE, 0.2);
         wrapper.drawText(
             `<white>Level:</white> ${getPrestige(player.achievements.bedwars_level || 0)} ${getLevelProgress(stats.Experience || 0)} ${getPrestige((player.achievements.bedwars_level || 0) + 1)}`,
             20, 80, true);
@@ -60,10 +54,10 @@ const command: Command = {
 
         const remainingWidth = await itemStats(wrapper, stats, 10, 125);
 
-        wrapper.roundedRect(remainingWidth, 125, canvas.width - remainingWidth - 10, 110, COLORS.WHITE, 0.2);
+        wrapper.roundedRect(remainingWidth, 125, ctx.canvas.width - remainingWidth - 10, 110, COLORS.WHITE, 0.2);
         await projectedStats(wrapper, stats, remainingWidth + 10, 145, (player.achievements.bedwars_level || 0));
 
-        wrapper.roundedRect(10, 245, canvas.width - 20, canvas.height - 245 - 10, COLORS.WHITE, 0.2);
+        wrapper.roundedRect(10, 245, ctx.canvas.width - 20, ctx.canvas.height - 245 - 10, COLORS.WHITE, 0.2);
         const error = await wrapper.drawPlayer(profile.id, 10, 250, 158, 256);
 
         if (error instanceof FeedbackMessage) {
@@ -75,17 +69,17 @@ const command: Command = {
         }
 
         wrapper.font("18px Minecraft, Arial");
-        let newY = await playerStats(wrapper, stats, 170, 255, canvas.width - 170 - 20 - 10);
+        let newY = await playerStats(wrapper, stats, 170, 255, ctx.canvas.width - 170 - 20 - 10);
 
-        newY = await otherStats(wrapper, stats, 170, newY, canvas.width - 170 - 20 - 10);
+        newY = await otherStats(wrapper, stats, 170, newY, ctx.canvas.width - 170 - 20 - 10);
 
-        await TITLES.Footer(ctx, 170, newY + 3, canvas.width - 170 - 20 - 10);
+        await TITLES.Footer(ctx, 170, newY + 3, ctx.canvas.width - 170 - 20 - 10);
 
         await interactions.followUp(config.appId, interaction.token, {
             content: `<:info:1119591149611528242> Projected stats assume __no__ negative stats are taken.`,
             files: [{
                 name: "stats.png",
-                data: await canvas.toBuffer("png")
+                data: await ctx.canvas.toBuffer("png")
             }]
         });
     }
