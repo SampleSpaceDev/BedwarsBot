@@ -3,8 +3,9 @@ import path from 'path';
 import logger from './logging'
 import { ApplicationCommandsAPI } from '@discordjs/core';
 import * as config from '../config.json';
+import { Command } from "../commands/types/base";
 
-export const commands = new Map<String, Function>();
+export const commands = new Map<String, Command>();
 
 export async function registerCommands(api: ApplicationCommandsAPI): Promise<void> {
     // Grab all the command files from the commands directory
@@ -21,7 +22,7 @@ export async function registerCommands(api: ApplicationCommandsAPI): Promise<voi
 
             if ('data' in command && 'execute' in command) {
                 const registeredCommand = await api.createGlobalCommand(config.appId, command.data);
-                commands.set(registeredCommand.id, command.execute);
+                commands.set(registeredCommand.id, command);
 
                 logger.info(`[COMMAND] Command "${command.data.name}" was registered.`);
             } else {
