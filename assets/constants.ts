@@ -1,5 +1,10 @@
 import { CanvasRenderingContext2D } from "skia-canvas";
 import { CanvasWrapper } from "../util/canvas";
+import { properties } from "../index";
+import { FeedbackMessage } from "../messages/error";
+import { ButtonBuilder } from "@discordjs/builders";
+import { ButtonStyle } from "discord-api-types/v10";
+import { PlayerTag } from "../services/hypixel";
 
 export const COLORS = Object.freeze({
     BLACK: "#000000",
@@ -40,6 +45,8 @@ export const SHADOWS = Object.freeze({
 });
 
 export const ITEMS = Object.freeze({
+    MANGO: "assets/minecraft/textures/item/mango.png",
+
     DIAMOND: "assets/minecraft/textures/item/diamond.png",
     EMERALD: "assets/minecraft/textures/item/emerald.png",
     IRON: "assets/minecraft/textures/item/iron_ingot.png",
@@ -49,20 +56,48 @@ export const ITEMS = Object.freeze({
     BARRIER: "assets/minecraft/textures/item/barrier.png",
     BED: "assets/minecraft/textures/item/bed.png",
     FIREWORK: "assets/minecraft/textures/item/firework_rocket.png",
+    GOLD_NUGGET: "assets/minecraft/textures/item/gold_nugget.png",
+    TRIPWIRE_HOOK: "assets/minecraft/textures/block/tripwire_hook.png",
+    PAPER: "assets/minecraft/textures/item/paper.png",
 });
 
 export const TITLES = Object.freeze({
-    Bedwars: function(ctx: CanvasRenderingContext2D, player: { name: string, rankColor: string } ) {
-        ctx.font = "30px Minecraft";
-
+    Stats: function(ctx: CanvasRenderingContext2D, player: { name: string, rankColor: string } ) {
         const wrapper = new CanvasWrapper(ctx);
-        const x = ctx.canvas.width / 2 - wrapper.measure(`${player.name}'s BedWars Stats`) / 2;
+        const maxWidth = 460;
+        let fontSize = 30;
+
+        ctx.font = `30px Minecraft`;
+        const text = `${player.name}'s BedWars Stats`;
+        let textWidth = wrapper.measure(text);
+        let textHeight = ctx.measureText(ctx.font).actualBoundingBoxAscent + ctx.measureText(ctx.font).actualBoundingBoxDescent;
+
+        // Reduce the font size while the text width exceeds the maximum width
+        while (textWidth > maxWidth) {
+            fontSize--;
+            ctx.font = `${fontSize}px Minecraft`;
+            textWidth = wrapper.measure(text);
+            textHeight = ctx.measureText(text).actualBoundingBoxAscent + ctx.measureText(text).actualBoundingBoxDescent;
+        }
+
+        const x = ctx.canvas.width / 2 - textWidth / 2;
+        const y = 25 + (textHeight / 2);
 
         wrapper.roundedRect(10, 10, ctx.canvas.width - 20, 40, COLORS.WHITE, 0.2);
 
         wrapper.drawText(
             `<${player.rankColor}>${player.name}<\\${player.rankColor}><gray>'s</gray> <red>Bed<\red><white>Wars Stats</white>`,
-            x, 40, true);
+            x, y, true);
+    },
+    Footer: async function(ctx: CanvasRenderingContext2D, x: number, y: number, width: number) {
+        const wrapper = new CanvasWrapper(ctx);
+
+        x += (width / 2) - (wrapper.measure(`Mango v${properties.version}`) / 2) - 12;
+
+        await wrapper.drawTexture(ITEMS.MANGO, x, y, 16, 16);
+        wrapper.drawGradientText(`Mango`, x + 24, y + 13, COLORS.GOLD, COLORS.YELLOW)
+        wrapper.drawText(`<dark_green>v</dark_green>`, x + 24 + wrapper.measure("Mango "), y + 13, true);
+        wrapper.drawGradientText(properties.version, x + 24 + wrapper.measure("Mango v"), y + 13, COLORS.GREEN, "#ddffdd")
     }
 });
 
@@ -73,4 +108,24 @@ export function getShadowColor(colorValue: string): string | undefined {
         }
     }
     return undefined;
+}
+
+export function unknownError() {
+    return FeedbackMessage.error("An unknown error occurred! Please report this if it continues.");
+}
+
+export function missingPlayer(type: PlayerTag, tag: string) {
+    const buttons: ButtonBuilder[] = [];
+
+    const button = new ButtonBuilder()
+        .setLabel("NameMC")
+        .setStyle(ButtonStyle.Link)
+        .setURL(encodeURI(`https://namemc.com/search?q=${tag}`));
+
+    buttons.push(button);
+
+    return FeedbackMessage.error(
+        `A player with the ${type} of \`${tag}\` could not be found!`,
+        { buttons }
+    );
 }
