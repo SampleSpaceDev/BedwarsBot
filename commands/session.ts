@@ -1,5 +1,5 @@
 import { Command } from "./types/base";
-import { EmbedBuilder, SlashCommandBuilder } from "@discordjs/builders";
+import { SlashCommandBuilder } from "@discordjs/builders";
 import { FeedbackMessage } from "../messages/error";
 import * as config from "../config.json";
 import { interactions } from "../index";

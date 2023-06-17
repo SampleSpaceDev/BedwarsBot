@@ -62,6 +62,6 @@ client.on(GatewayDispatchEvents.InteractionCreate, async ({ data: rawInteraction
     }
 });
 
-gateway.connect().then(r => {
+gateway.connect().then(() => {
     logger.info("Gateway connected.");
 });

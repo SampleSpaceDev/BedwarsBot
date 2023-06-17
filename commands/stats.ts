@@ -61,7 +61,7 @@ const command: Command = {
         const remainingWidth = await itemStats(wrapper, stats, 10, 125);
 
         wrapper.roundedRect(remainingWidth, 125, canvas.width - remainingWidth - 10, 110, COLORS.WHITE, 0.2);
-        await projectedStats(wrapper, stats, remainingWidth + 10, 145, (player.achievements.bedwars_level || 0), remainingWidth - 20);
+        await projectedStats(wrapper, stats, remainingWidth + 10, 145, (player.achievements.bedwars_level || 0));
 
         wrapper.roundedRect(10, 245, canvas.width - 20, canvas.height - 245 - 10, COLORS.WHITE, 0.2);
         const error = await wrapper.drawPlayer(profile.id, 10, 250, 158, 256);
@@ -91,7 +91,7 @@ const command: Command = {
     }
 }
 
-async function projectedStats(wrapper: CanvasWrapper, stats: Bedwars, x: number, y: number, level: number, width: number) {
+async function projectedStats(wrapper: CanvasWrapper, stats: Bedwars, x: number, y: number, level: number) {
     const nextPrestige = Math.ceil(level / 100) * 100;
     const starsToGo = nextPrestige - level;
 

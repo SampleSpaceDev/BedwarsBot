@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { mongo } from "../services";
 import { LinkedPlayer } from "../services/types";
 
