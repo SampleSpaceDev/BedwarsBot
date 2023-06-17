@@ -1,6 +1,7 @@
 import { COLORS, getShadowColor } from "../assets/constants";
 import { CanvasRenderingContext2D, loadImage } from "skia-canvas";
 import { urlToBuffer } from "../assets";
+import { FeedbackMessage } from "../messages/error";
 
 type TextStyle = {
     color: string;
@@ -42,6 +43,15 @@ export class CanvasWrapper {
         this.ctx.drawImage(image, x, y, width, height);
     }
 
+    public drawGradientText(text: string, x: number, y: number, color1: string, color2: string) {
+        const characters = text.split("");
+        const gradient = this.createGradient(color1, color2, characters.length);
+
+        for (let i = 0; i < characters.length; i++) {
+            this.drawShadowedText(characters[i], x, y, gradient[i], this.darken(gradient[i], 0.8));
+            x += this.ctx.measureText(characters[i]).width;
+        }
+    }
 
     public drawText(text: string, x: number, y: number, shadow: boolean) {
         const styleStack: TextStyle[] = [];
@@ -113,30 +123,15 @@ export class CanvasWrapper {
         }
     }
 
-    private drawShadowedText(text: string, x: number, y: number, color: string) {
-        const fontSizeRegex = /(\d+)px/;
-        const fontSizeMatch = this.ctx.font.match(fontSizeRegex);
-        const fontSize = fontSizeMatch ? parseInt(fontSizeMatch[1]) : 20;
-
-        let offset = 0;
-        if (fontSize >= 15 && fontSize < 30) {
-            offset = 2;
-        } else if (fontSize >= 30 && fontSize < 40) {
-            offset = 3;
-        }
-
-        this.ctx.fillStyle = getShadowColor(color);
-        this.ctx.fillText(text, x + offset, y + offset);
-
-        this.ctx.fillStyle = color;
-        this.ctx.fillText(text, x, y);
-    }
-
-    async drawPlayer(id: string, x: number, y: number, width: number, height: number) {
+    async drawPlayer(id: string, x: number, y: number, width: number, height: number): Promise<void | FeedbackMessage> {
         const imageUrl = `https://visage.surgeplay.com/full/${id}.png`;
         const buffer = await urlToBuffer(imageUrl);
-        const image = await loadImage(buffer);
 
+        if (buffer instanceof FeedbackMessage) {
+            return buffer;
+        }
+
+        const image = await loadImage(buffer);
         this.ctx.drawImage(image, x, y, width, height);
     }
 
@@ -153,5 +148,47 @@ export class CanvasWrapper {
 
     public font(font: string) {
         this.ctx.font = font;
+    }
+
+    private drawShadowedText(text: string, x: number, y: number, color: string, shadowColor?: string) {
+        const fontSizeRegex = /(\d+)px/;
+        const fontSizeMatch = this.ctx.font.match(fontSizeRegex);
+        const fontSize = fontSizeMatch ? parseInt(fontSizeMatch[1]) : 20;
+
+        let offset = 0;
+        if (fontSize >= 15 && fontSize < 30) {
+            offset = 2;
+        } else if (fontSize >= 30 && fontSize < 40) {
+            offset = 3;
+        }
+
+        this.ctx.fillStyle = shadowColor || getShadowColor(color);
+        this.ctx.fillText(text, x + offset, y + offset);
+
+        this.ctx.fillStyle = color;
+        this.ctx.fillText(text, x, y);
+    }
+
+    private interpolate = (a: number, b: number, ratio: number) => Math.round(a + (b - a) * ratio);
+    private clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(value, max));
+    private hexToRGB = (hex: string) => hex.replace(/^#/, '').match(/.{2}/g).map(v => parseInt(v, 16));
+    private rgbToHex = (rgb: number[]) => `#${rgb.map(c => this.clamp(c, 0, 255).toString(16).padStart(2, '0')).join('')}`;
+
+    private createGradient(color1: string, color2: string, length: number) {
+        const startRGB = this.hexToRGB(color1);
+        const endRGB = this.hexToRGB(color2);
+
+        return Array.from({ length }, (_, i) => {
+            const ratio = i / (length - 1);
+            const interpolatedRGB = startRGB.map((c, j) => this.interpolate(c, endRGB[j], ratio));
+            return this.rgbToHex(interpolatedRGB);
+        });
+    }
+
+    private darken(color: string, amount: number) {
+        const rgb = this.hexToRGB(color);
+        const darkenedRGB = rgb.map(c => Math.round(c * (1 - amount)));
+
+        return this.rgbToHex(darkenedRGB)
     }
 }
