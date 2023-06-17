@@ -1,6 +1,9 @@
 export class Bedwars {
     games_played_bedwars: number;
     Experience: number;
+    coins: number;
+    winstreak: number;
+    bedwars_boxes: number;
 
     kills_bedwars: number;
     deaths_bedwars: number;
