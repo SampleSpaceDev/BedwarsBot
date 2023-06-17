@@ -1,15 +1,19 @@
-import { Command } from "./types/base";
-import { SlashCommandBuilder } from "@discordjs/builders";
-import { FeedbackMessage } from "../messages/error";
+import {Command} from "./types/base";
+import {SlashCommandBuilder} from "@discordjs/builders";
+import {FeedbackMessage} from "../messages/error";
 import * as config from "../config.json";
-import { interactions } from "../index";
-import { hypixel, mongo } from "../services";
-import { Session, Bedwars } from "../services/types";
-import { getPlayer, randomId } from "../util";
+import {interactions} from "../index";
+import {hypixel, mongo} from "../services";
+import {Bedwars, Session} from "../services/types";
+import {getPlayer, randomId} from "../util";
 import {
     APIApplicationCommandAutocompleteInteraction,
     APIApplicationCommandInteractionDataStringOption
 } from "@discordjs/core";
+import { CanvasWrapper } from "../util/canvas";
+import { defaultCanvas } from "../assets";
+import { COLORS, TITLES } from "../assets/constants";
+import { getPrestige } from "../util/prestige";
 
 type Option = APIApplicationCommandInteractionDataStringOption;
 
@@ -149,11 +153,84 @@ async function viewSubcommand(interaction, id: string) {
         });
     }
 
+    const image = await buildImage(session);
 
+    await interactions.followUp(config.appId, interaction.token, {
+        files: [{
+            name: "stats.png",
+            data: await image.toBuffer("png")
+        }]
+    });
+}
 
-    // return interactions.followUp(config.appId, interaction.token, {
-    //     embeds: [embed.toJSON()]
-    // });
+type Differences = {
+    wins: number,
+    losses: number,
+    kills: number,
+    deaths: number,
+    finalKills: number,
+    finalDeaths: number,
+    bedsBroken: number,
+    bedsLost: number,
+    gamesPlayed: number,
+    coins: number
+}
+
+const calcDifferences = (session: Session, stats: Bedwars): Differences => {
+    return {
+        wins: stats.wins_bedwars - session.start.bedwars.wins,
+        losses: stats.losses_bedwars - session.start.bedwars.losses,
+        kills: stats.kills_bedwars - session.start.bedwars.kills,
+        deaths: stats.deaths_bedwars - session.start.bedwars.deaths,
+        finalKills: stats.final_kills_bedwars - session.start.bedwars.finalKills,
+        finalDeaths: stats.final_deaths_bedwars - session.start.bedwars.finalDeaths,
+        bedsBroken: stats.beds_broken_bedwars - session.start.bedwars.bedsBroken,
+        bedsLost: stats.beds_lost_bedwars - session.start.bedwars.bedsLost,
+        gamesPlayed: stats.games_played_bedwars - session.start.bedwars.gamesPlayed,
+        coins: stats.coins - session.start.bedwars.coins,
+    };
+}
+
+const calcPerDay = (start: number, differences: Differences) => {
+    return {
+        wins: differences.wins,
+        losses: differences.losses,
+        kills: differences.kills,
+        deaths: differences.deaths,
+        finalKills: differences.finalKills,
+        finalDeaths: differences.finalDeaths,
+        bedsBroken: differences.bedsBroken,
+        bedsLost: differences.bedsLost,
+        gamesPlayed: differences.gamesPlayed,
+        coins: differences.coins,
+    };
+}
+
+async function buildImage(session: Session) {
+    const player = (await hypixel.getPlayer("uuid", session.ownerId)).player;
+    const stats = player.stats.Bedwars as Bedwars;
+
+    const differences = calcDifferences(session, stats);
+    const statsPerDay = calcPerDay(session.started, differences);
+
+    const ctx = await defaultCanvas("Bedwars");
+    const wrapper = new CanvasWrapper(ctx);
+
+    await TITLES.Session(ctx, { name: player.displayname, rankColor: hypixel.getRankColor(player) });
+
+    ctx.font = "20px Minecraft, Arial";
+    wrapper.roundedRect(10, 60, ctx.canvas.width - 20, 55, COLORS.WHITE, 0.2);
+
+    wrapper.drawText(`<white>Session started:</white> <yellow>${new Date(session.started * 1000).toLocaleString()}</yellow>`, 20, 80, true);
+    wrapper.drawText(`<white>Games Played:</white> <green>${differences.gamesPlayed.toLocaleString()}</green>`, 20, 105, true);
+
+    wrapper.roundedRect(10, 125, ctx.canvas.width - 20, 30, COLORS.WHITE, 0.2);
+    wrapper.drawText(
+        `<white>Levels Gained:</white> <green>${(player.achievements.bedwars_level - session.start.bedwars.level).toLocaleString()}</green> <white>-</white> ${getPrestige(session.start.bedwars.level)} <white>➜</white> ${getPrestige(player.achievements.bedwars_level)}`, 20, 145, true);
+
+    wrapper.roundedRect(10, 165, ctx.canvas.width - 20, 110, COLORS.WHITE, 0.2);
+
+    return ctx.canvas;
 }
 
 export default command;
