@@ -1,12 +1,10 @@
-import { ButtonBuilder } from "@discordjs/builders";
-import { ButtonStyle } from "discord-api-types/v10";
-import { ErrorMessage } from "../messages/error";
-import { PlayerResponse } from "./types/player";
-import axios, {AxiosInstance} from "axios";
+import { Player, PlayerResponse } from "./types";
+import axios, { AxiosInstance } from "axios";
 import * as config from "../config.json";
 import logger from "../util/logging";
+import { COLORS } from "../assets/constants";
 
-type PlayerTag = "name" | "uuid" | "none";
+export type PlayerTag = "name" | "uuid" | "none";
 type Stats = "Bedwars";
 
 export class HypixelApiService {
@@ -50,24 +48,60 @@ export class HypixelApiService {
         return player.player.stats[game];
     }
 
-    public missingPlayer(type: PlayerTag, tag: string) {
-        const buttons: ButtonBuilder[] = [];
+    public getRank(player: Player): string {
+        let ranks = [
+            player.rank,
+            player.monthlyPackageRank,
+            player.newPackageRank,
+            player.packageRank
+        ];
 
-        const button = new ButtonBuilder()
-            .setLabel("NameMC")
-            .setStyle(ButtonStyle.Link)
-            .setURL(encodeURI(`https://namemc.com/search?q=${tag}`));
-
-        buttons.push(button);
-
-        return new ErrorMessage(
-            "Unknown Player",
-            `A player with the ${type} of \`${tag}\` could not be found!`,
-            { buttons }
-        );
+        for (const rank of ranks) {
+            if (rank !== undefined && rank !== "NONE" && rank !== "NORMAL") return rank;
+        }
+        return "NONE";
     }
 
-    public unknownError() {
-        return new ErrorMessage("Error", "An unknown error occurred!");
+    public getRankColor(player: Player): string {
+        if (player.prefix) {
+            return this.codesToColor[player.prefix.substring(0, 2)];
+        }
+
+        switch (this.getRank(player)) {
+            case "VIP":
+            case "VIP_PLUS":
+                return COLORS.GREEN;
+            case "MVP":
+            case "MVP_PLUS":
+                return COLORS.AQUA;
+            case "SUPERSTAR":
+                return player.monthlyRankColor === "GOLD" ? COLORS.GOLD : COLORS.AQUA;
+            case "GAME_MASTER":
+                return COLORS.DARK_GREEN;
+            case "YOUTUBER":
+            case "ADMIN":
+                return COLORS.RED;
+            default:
+                return COLORS.GRAY;
+        }
+    }
+
+    private codesToColor: { [key: string]: string } = {
+        "§0": COLORS.BLACK,
+        "§1": COLORS.DARK_BLUE,
+        "§2": COLORS.DARK_GREEN,
+        "§3": COLORS.DARK_AQUA,
+        "§4": COLORS.DARK_RED,
+        "§5": COLORS.DARK_PURPLE,
+        "§6": COLORS.GOLD,
+        "§7": COLORS.GRAY,
+        "§8": COLORS.DARK_GRAY,
+        "§9": COLORS.BLUE,
+        "§a": COLORS.GREEN,
+        "§b": COLORS.AQUA,
+        "§c": COLORS.RED,
+        "§d": COLORS.LIGHT_PURPLE,
+        "§e": COLORS.YELLOW,
+        "§f": COLORS.WHITE,
     }
 }
