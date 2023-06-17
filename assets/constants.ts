@@ -1,4 +1,4 @@
-import {Canvas, CanvasRenderingContext2D} from "skia-canvas";
+import { CanvasRenderingContext2D } from "skia-canvas";
 import { CanvasWrapper } from "../util/canvas";
 import { properties } from "../index";
 import { FeedbackMessage } from "../messages/error";
