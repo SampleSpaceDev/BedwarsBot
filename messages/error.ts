@@ -13,13 +13,13 @@ interface ErrorMessageOptions {
     image?: InteractionAttachment;
 }
 
-export class ErrorMessage extends Message {
-    public constructor(
+export class FeedbackMessage extends Message {
+    private constructor(
         title: string,
         description: string,
         options?: ErrorMessageOptions
     );
-    public constructor(
+    private constructor(
         title: string,
         description?: string,
         {
@@ -52,5 +52,17 @@ export class ErrorMessage extends Message {
         }
 
         super(data);
+    }
+
+    public static error(description: string, options?: ErrorMessageOptions) {
+        return new FeedbackMessage("Error", description, options || {
+            color: 0xcd1820,
+        });
+    }
+
+    public static success(description: string, options?: ErrorMessageOptions) {
+        return new FeedbackMessage("Success", description, options || {
+            color: 0x7aff7a,
+        });
     }
 }
