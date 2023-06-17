@@ -1,9 +1,11 @@
-import { FontLibrary, loadImage } from "skia-canvas";
+import { Canvas, FontLibrary, loadImage, CanvasRenderingContext2D } from "skia-canvas";
 import { readdirSync } from "node:fs";
 import logger from "../util/logging";
 import axios from "axios";
-import { unknownError } from "./constants";
+import { COLORS, unknownError } from "./constants";
 import { FeedbackMessage } from "../messages/error";
+import { CanvasWrapper } from "../util/canvas";
+import { stripColor } from "../util";
 
 type Game = "Bedwars";
 
@@ -31,4 +33,41 @@ export async function urlToBuffer(imageUrl: string) : Promise<Buffer | FeedbackM
         console.error('Error downloading the image:', error);
         return unknownError();
     }
+}
+
+export async function defaultCanvas(game: Game): Promise<CanvasRenderingContext2D> {
+    const canvas = new Canvas(500, 500);
+    const ctx = canvas.getContext("2d");
+
+    const backgroundImage = await randomBackground(game);
+    ctx.filter = 'blur(10px) brightness(50%)';
+    ctx.drawImage(backgroundImage, 0, 0, 500, 500);
+    ctx.filter = 'blur(0px) brightness(100%)';
+
+    return ctx;
+}
+
+export function drawTitleText(ctx: CanvasRenderingContext2D, title: string) {
+    const wrapper = new CanvasWrapper(ctx);
+    const maxWidth = 460;
+    let fontSize = 30;
+
+    ctx.font = `30px Minecraft`;
+    const text = stripColor(title);
+    let textWidth = wrapper.measure(text);
+    let textHeight = ctx.measureText(ctx.font).actualBoundingBoxAscent + ctx.measureText(ctx.font).actualBoundingBoxDescent;
+
+    // Reduce the font size while the text width exceeds the maximum width
+    while (textWidth > maxWidth) {
+        fontSize--;
+        ctx.font = `${fontSize}px Minecraft`;
+        textWidth = wrapper.measure(text);
+        textHeight = ctx.measureText(text).actualBoundingBoxAscent + ctx.measureText(text).actualBoundingBoxDescent;
+    }
+
+    const x = ctx.canvas.width / 2 - textWidth / 2;
+    const y = 25 + (textHeight / 2);
+
+    wrapper.roundedRect(10, 10, ctx.canvas.width - 20, 40, COLORS.WHITE, 0.2);
+    wrapper.drawText(title, x, y, true);
 }

@@ -1,10 +1,11 @@
-import { CanvasRenderingContext2D } from "skia-canvas";
+import {Canvas, CanvasRenderingContext2D} from "skia-canvas";
 import { CanvasWrapper } from "../util/canvas";
 import { properties } from "../index";
 import { FeedbackMessage } from "../messages/error";
 import { ButtonBuilder } from "@discordjs/builders";
 import { ButtonStyle } from "discord-api-types/v10";
 import { PlayerTag } from "../services/hypixel";
+import { drawTitleText } from "./index";
 
 export const COLORS = Object.freeze({
     BLACK: "#000000",
@@ -63,31 +64,10 @@ export const ITEMS = Object.freeze({
 
 export const TITLES = Object.freeze({
     Stats: function(ctx: CanvasRenderingContext2D, player: { name: string, rankColor: string } ) {
-        const wrapper = new CanvasWrapper(ctx);
-        const maxWidth = 460;
-        let fontSize = 30;
-
-        ctx.font = `30px Minecraft`;
-        const text = `${player.name}'s BedWars Stats`;
-        let textWidth = wrapper.measure(text);
-        let textHeight = ctx.measureText(ctx.font).actualBoundingBoxAscent + ctx.measureText(ctx.font).actualBoundingBoxDescent;
-
-        // Reduce the font size while the text width exceeds the maximum width
-        while (textWidth > maxWidth) {
-            fontSize--;
-            ctx.font = `${fontSize}px Minecraft`;
-            textWidth = wrapper.measure(text);
-            textHeight = ctx.measureText(text).actualBoundingBoxAscent + ctx.measureText(text).actualBoundingBoxDescent;
-        }
-
-        const x = ctx.canvas.width / 2 - textWidth / 2;
-        const y = 25 + (textHeight / 2);
-
-        wrapper.roundedRect(10, 10, ctx.canvas.width - 20, 40, COLORS.WHITE, 0.2);
-
-        wrapper.drawText(
-            `<${player.rankColor}>${player.name}<\\${player.rankColor}><gray>'s</gray> <red>Bed<\red><white>Wars Stats</white>`,
-            x, y, true);
+        drawTitleText(ctx, `<${player.rankColor}>${player.name}<\\${player.rankColor}><gray>'s</gray> <red>Bed<\red><white>Wars Stats</white>`);
+    },
+    Session: function(ctx: CanvasRenderingContext2D, player: { name: string, rankColor: string } ) {
+        drawTitleText(ctx, `<${player.rankColor}>${player.name}<\\${player.rankColor}><gray>'s</gray> <red>Bed<\red><white>Wars Session</white>`);
     },
     Footer: async function(ctx: CanvasRenderingContext2D, x: number, y: number, width: number) {
         const wrapper = new CanvasWrapper(ctx);
