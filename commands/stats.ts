@@ -9,23 +9,33 @@ import { CanvasWrapper } from "../util/canvas";
 import { getLevelProgress, getPrestige, getPrestigeProgress } from "../util/prestige";
 import { FeedbackMessage } from "../messages/error";
 import * as config from "../config.json";
-import { f, ratio } from "../util";
+import { f, getPlayer, ratio } from "../util";
 
 const command: Command = {
     data: new SlashCommandBuilder()
         .setName("stats")
-        .setDescription("Basic Bedwars stats command.")
+        .setDescription("View your Bedwars stats.")
         .addStringOption(option => option
             .setName("player")
             .setDescription("The username or UUID of a player.")
-            .setRequired(true)
         )
         .toJSON(),
     execute: async (interaction) => {
         await interactions.defer(interaction.id, interaction.token);
 
         const options = interaction.data.options as { value: string }[];
-        const tag = options[0].value;
+        let tag = options[0].value;
+
+        if (tag === undefined) {
+            tag = await getPlayer(interaction.member.user.id);
+            if (tag === undefined) {
+                const errorMessage = FeedbackMessage.error("Your username is not linked! Use </link:1119652679052972152> to link your username.");
+                await interactions.followUp(config.appId, interaction.token, {
+                    embeds: errorMessage.embeds.map(embed => embed.toJSON())
+                });
+                return;
+            }
+        }
 
         const profile = (await mojang.getPlayer(tag)).data.player;
 
