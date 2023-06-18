@@ -32,6 +32,20 @@ const command: Command = {
             )
         )
         .addSubcommand(command => command
+            .setName("rename")
+            .setDescription("Rename a session")
+            .addStringOption(option => option
+                .setName("session")
+                .setDescription("The ID of the session you wish to view")
+                .setRequired(true)
+                .setAutocomplete(true)
+            )
+            .addStringOption(option => option
+                .setName("name")
+                .setDescription("The new name of the session")
+            )
+        )
+        .addSubcommand(command => command
             .setName("delete")
             .setDescription("Delete a session")
             .addStringOption(option => option
@@ -64,6 +78,9 @@ const command: Command = {
         switch (subcommand.name) {
             case "start":
                 await startSubcommand(interaction, sessionName.value);
+                return;
+            case "rename":
+                await renameSubcommand(interaction, sessionId.value, sessionName.value);
                 return;
             case "delete":
                 await deleteSubcommand(interaction, sessionId.value);
@@ -133,6 +150,33 @@ async function startSubcommand(interaction, name: string) {
 
     return interactions.followUp(config.appId, interaction.token, {
         embeds: FeedbackMessage.success(`Created session \`${name || sessionId}\`.`).embeds.map((embed) => embed.toJSON())
+    });
+}
+
+async function renameSubcommand(interaction, sessionId: string, sessionName: string) {
+    const sessions = await mongo.getCollection<Session>("sessions");
+    const player = await getPlayer(interaction.member.user.id);
+
+    const result = await sessions.findOneAndUpdate(
+        {
+            id: sessionId,
+            ownerId: player
+        },
+        {
+            $set: {
+                name: sessionName
+            }
+        }
+    );
+
+    if (!result.value) {
+        return interactions.followUp(config.appId, interaction.token, {
+            embeds: FeedbackMessage.error("Session not found").embeds.map((embed) => embed.toJSON())
+        });
+    }
+
+    return interactions.followUp(config.appId, interaction.token, {
+        embeds: FeedbackMessage.success(`Deleted session \`${sessionId}\`.`).embeds.map((embed) => embed.toJSON())
     });
 }
 
