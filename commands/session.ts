@@ -266,8 +266,9 @@ async function buildImage(interaction, session: Session) {
         `<white>Wins:</white> <green>${f(Math.floor(statsPerDay.wins.value))}</green> <white>/</white> <red>${f(Math.floor(statsPerDay.losses.value))}</red>`,
         `<white>Coins:</white> <gold>${f(Math.floor(statsPerDay.coins.value))}</gold>`,
         `<white>XP:</white> <aqua>${f(Math.floor(statsPerDay.experience.value))}</aqua>`,
+        `<white>Levels:</white> <dark_aqua>${statsPerDay.level.value.toFixed(2)}</dark_aqua>`,
+        `<white>FKDR:</white> <gold>${ratio(statsPerDay.finalKills.value, statsPerDay.finalDeaths.value)}</gold>`
     ];
-    // ].forEach((stat, i) => wrapper.drawText(stat, 20, 420 + (i * 20), true));
 
     // Split perDay into arrays of size 4
     const split = Array.from({ length: Math.ceil(perDay.length / 4) }, (_, index) =>
@@ -287,8 +288,6 @@ async function buildImage(interaction, session: Session) {
         x += longest + 20;
         index = 0;
     }
-
-
 
     wrapper.roundedRect(ctx.canvas.width - 158 - 30, 190, 178, ctx.canvas.height - 190 - 10, COLORS.WHITE, 0.2);
     const skinRender = await wrapper.drawPlayer(player.uuid, ctx.canvas.width - 158 - 20, 200, {
