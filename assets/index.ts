@@ -11,7 +11,7 @@ type Game = "Bedwars";
 
 export async function randomBackground(game: Game) {
     const path = `assets/${game.toLowerCase()}`;
-    const images = readdirSync(path);
+    const images = readdirSync(path).filter(file => file.endsWith(".png"));
     return await loadImage(`${path}/${images[Math.floor(Math.random() * images.length)]}`);
 }
 
