@@ -16,6 +16,7 @@ export interface Session {
             gamesPlayed: number;
             level: number;
             coins: number;
+            experience: number;
         }
     }
 }
