@@ -27,7 +27,6 @@ export class HypixelApiService {
 
     public async getPlayer(type: PlayerTag, tag: string): Promise<PlayerResponse> {
         if (this.cache.get(tag)) {
-            logger.info(`Read from cache ${tag}`);
             return this.cache.get(tag);
         }
 

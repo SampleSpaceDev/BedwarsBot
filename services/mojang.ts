@@ -40,7 +40,6 @@ export class MojangApiService {
 
     public async getPlayer(tag: string) {
         if (this.cache.get(tag)) {
-            console.log(`Read from cache ${tag}`);
             return this.cache.get(tag);
         }
 
