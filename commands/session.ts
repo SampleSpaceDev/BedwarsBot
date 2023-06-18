@@ -27,10 +27,10 @@ const command: Command = {
             .setName("start")
             .setDescription("Starts a new session")
         )
-        .addSubcommand(command => command
-            .setName("list")
-            .setDescription("List your sessions")
-        )
+        // .addSubcommand(command => command
+        //     .setName("list")
+        //     .setDescription("List your sessions")
+        // )
         .addSubcommand(command => command
             .setName("view")
             .setDescription("View a session")
@@ -54,9 +54,9 @@ const command: Command = {
             case "start":
                 await startSubcommand(interaction);
                 return;
-            case "list":
-                await listSubcommand(interaction);
-                return;
+            // case "list":
+            //     await listSubcommand(interaction);
+            //     return;
             case "view":
                 await viewSubcommand(interaction, sessionId.value);
                 return;
