@@ -4,8 +4,6 @@ WORKDIR /usr/src/app
 
 COPY package*.json ./
 
-COPY package.json .
-
 RUN npm install -g yarn \
     && yarn install \
     && yarn add -g typescript \
