@@ -5,7 +5,7 @@ WORKDIR /app
 COPY package*.json ./
 COPY yarn.lock ./
 
-RUN apt install -y cargo
+RUN apt update && apt install -y cargo
 RUN yarn install
 
 COPY . .
