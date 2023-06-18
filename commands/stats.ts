@@ -24,9 +24,9 @@ const command: Command = {
         await interactions.defer(interaction.id, interaction.token);
 
         const options = interaction.data.options as { value: string }[];
-        let tag = options[0]?.value;
 
-        if (tag === undefined) {
+        let tag: string;
+        if (options === undefined) {
             tag = await getPlayer(interaction.member.user.id);
             if (tag === undefined) {
                 const errorMessage = FeedbackMessage.error("Your username is not linked! Use </link:1119652679052972152> to link your username.");
@@ -35,6 +35,8 @@ const command: Command = {
                 });
                 return;
             }
+        } else {
+            tag = options[0]?.value;
         }
 
         const profile = (await mojang.getPlayer(tag)).data.player;
