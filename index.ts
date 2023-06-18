@@ -42,23 +42,20 @@ client.once(GatewayDispatchEvents.Ready, async () => {
     const commit = extractCommitInfo();
     if (commit) {
         await axios.post(statusWebhook, {
-            content: {
-                "content": null,
-                "embeds": [
-                    {
-                        "title": "✅ Mango is now online.",
-                        "color": 4156010,
-                        "fields": [
-                            {
-                                "name": "Version",
-                                "value": `"[\`${commit.shortHash}\`](https://github.com/SampleSpaceDev/Mango/commit/${commit.hash}) - \`${commit.message}\`"`,
-                                "inline": true
-                            }
-                        ]
-                    }
-                ],
-                "attachments": []
-            }
+            content: null,
+            embeds: [
+                {
+                    "title": "✅ Mango is now online.",
+                    "color": 4156010,
+                    "fields": [
+                        {
+                            "name": "Version",
+                            "value": `"[\`${commit.shortHash}\`](https://github.com/SampleSpaceDev/Mango/commit/${commit.hash}) - \`${commit.message}\`"`,
+                            "inline": true
+                        }
+                    ]
+                }
+            ]
         });
     }
 
