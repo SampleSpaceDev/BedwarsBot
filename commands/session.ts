@@ -77,7 +77,7 @@ const command: Command = {
 
         switch (subcommand.name) {
             case "start":
-                await startSubcommand(interaction, sessionName.value);
+                await startSubcommand(interaction, sessionName?.value || undefined);
                 return;
             case "rename":
                 await renameSubcommand(interaction, sessionId.value, sessionName.value);
@@ -115,7 +115,7 @@ const command: Command = {
     }
 }
 
-async function startSubcommand(interaction, name: string) {
+async function startSubcommand(interaction, name?: string) {
     const uuid = await getPlayer(interaction.member.user.id);
     const sessions = await mongo.getCollection<Session>("sessions");
 
