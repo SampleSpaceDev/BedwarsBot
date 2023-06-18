@@ -50,7 +50,7 @@ client.once(GatewayDispatchEvents.Ready, async () => {
                     "fields": [
                         {
                             "name": "Version",
-                            "value": `"[\`${commit.shortHash}\`](https://github.com/SampleSpaceDev/Mango/commit/${commit.hash}) - \`${commit.message}\`"`,
+                            "value": `[\`${commit.shortHash}\`](https://github.com/SampleSpaceDev/Mango/commit/${commit.hash}) - \`${commit.message}\``,
                             "inline": true
                         }
                     ]
