@@ -90,7 +90,7 @@ const command: Command = {
             choices: playerSessions.map((session) => {
                 const date = new Date(session.started * 1000).toLocaleString();
                 return {
-                    name: `${session.name} (${date})` || date,
+                    name: session.name !== undefined ? `${session.name} (${date})` : date,
                     value: session.id
                 }
             })
