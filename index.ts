@@ -45,7 +45,7 @@ client.once(GatewayDispatchEvents.Ready, async () => {
             content: null,
             embeds: [
                 {
-                    "title": "✅ Mango is now online.",
+                    "title": `✅ Mango v${properties.version} is now online.`,
                     "color": 4156010,
                     "fields": [
                         {
