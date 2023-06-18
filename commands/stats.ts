@@ -24,7 +24,7 @@ const command: Command = {
         await interactions.defer(interaction.id, interaction.token);
 
         const options = interaction.data.options as { value: string }[];
-        let tag = options[0].value;
+        let tag = options[0]?.value;
 
         if (tag === undefined) {
             tag = await getPlayer(interaction.member.user.id);
