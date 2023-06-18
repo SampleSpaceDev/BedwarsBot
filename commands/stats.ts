@@ -9,6 +9,7 @@ import { CanvasWrapper } from "../util/canvas";
 import { getLevelProgress, getPrestige, getPrestigeProgress } from "../util/prestige";
 import { FeedbackMessage } from "../messages/error";
 import * as config from "../config.json";
+import { f, ratio } from "../util";
 
 const command: Command = {
     data: new SlashCommandBuilder()
@@ -57,7 +58,9 @@ const command: Command = {
         await projectedStats(wrapper, stats, remainingWidth + 10, 145, (player.achievements.bedwars_level || 0));
 
         wrapper.roundedRect(10, 245, ctx.canvas.width - 20, ctx.canvas.height - 245 - 10, COLORS.WHITE, 0.2);
-        const error = await wrapper.drawPlayer(profile.id, 10, 250, 158, 256);
+        const error = await wrapper.drawPlayer(profile.id, 10, 250, {
+            type: "full"
+        });
 
         if (error instanceof FeedbackMessage) {
             return interactions.followUp(config.appId, interaction.token, {
@@ -98,10 +101,10 @@ async function projectedStats(wrapper: CanvasWrapper, stats: Bedwars, x: number,
 
     wrapper.font("16px Minecraft, Arial");
 
-    const killsLine = `<white>Kills at </white>${prestige}<white>:</white> <yellow>${projectedKills.toLocaleString()}</yellow> <white>(</white><green>+${(projectedKills - stats.kills_bedwars).toLocaleString()}</green><white>)</white>`;
-    const finalsLine = `<white>Finals at </white>${prestige}<white>:</white> <yellow>${projectedFinals.toLocaleString()}</yellow> <white>(</white><green>+${(projectedFinals - stats.final_kills_bedwars).toLocaleString()}</green><white>)</white>`;
-    const bedsLine = `<white>Beds at </white>${prestige}<white>:</white> <yellow>${projectedBeds.toLocaleString()}</yellow> <white>(</white><green>+${(projectedBeds - stats.beds_broken_bedwars).toLocaleString()}</green><white>)</white>`;
-    const winsLine = `<white>Wins at </white>${prestige}<white>:</white> <yellow>${winsPerStar.toLocaleString()}</yellow> <white>(</white><green>+${(winsPerStar - stats.wins_bedwars).toLocaleString()}</green><white>)</white>`;
+    const killsLine = `<white>Kills at </white>${prestige}<white>:</white> <yellow>${f(projectedKills)}</yellow> <white>(</white><green>+${f(projectedKills - stats.kills_bedwars)}</green><white>)</white>`;
+    const finalsLine = `<white>Finals at </white>${prestige}<white>:</white> <yellow>${f(projectedFinals)}</yellow> <white>(</white><green>+${f(projectedFinals - stats.final_kills_bedwars)}</green><white>)</white>`;
+    const bedsLine = `<white>Beds at </white>${prestige}<white>:</white> <yellow>${f(projectedBeds).toLocaleString()}</yellow> <white>(</white><green>+${f(projectedBeds - stats.beds_broken_bedwars)}</green><white>)</white>`;
+    const winsLine = `<white>Wins at </white>${prestige}<white>:</white> <yellow>${f(winsPerStar).toLocaleString()}</yellow> <white>(</white><green>+${f(winsPerStar - stats.wins_bedwars)}</green><white>)</white>`;
     const fkdrLine = `<white>FKDR at </white>${prestige}<white>:</white> <yellow>${projectedFkdr.toFixed(2).toLocaleString()}</yellow> <white>(</white><green>+${(projectedFkdr - (stats.final_kills_bedwars / stats.final_deaths_bedwars)).toFixed(2).toLocaleString()}</green><white>)</white>`;
 
     const lines = [killsLine, finalsLine, bedsLine, winsLine, fkdrLine];
@@ -131,7 +134,7 @@ async function itemStats(wrapper: CanvasWrapper, stats: Bedwars, x: number, y: n
 
     for (let [key, texture, color] of sorted) {
         await wrapper.drawTexture(texture, x + 8, y + 10, 16, 16);
-        wrapper.drawText(`<${color}>${(stats[key] || 0).toLocaleString()}</${color}>`, x + 8 + 20, y + 10 + 16, true);
+        wrapper.drawText(`<${color}>${f(stats[key] || 0)}</${color}>`, x + 8 + 20, y + 10 + 16, true);
         y += 25;
     }
 
@@ -160,28 +163,28 @@ async function playerStats(wrapper: CanvasWrapper, stats: Bedwars, x: number, y:
             icon: ITEMS.IRON_SWORD,
             pos: stats.kills_bedwars || 0,
             neg: stats.deaths_bedwars || 0,
-            ratio: ((stats.kills_bedwars || 0) / (stats.deaths_bedwars || 0)).toFixed(2)
+            ratio: ratio((stats.kills_bedwars || 0), (stats.deaths_bedwars || 0))
         },
         {
             name: 'Finals',
             icon: ITEMS.DIAMOND_SWORD,
             pos: stats.final_kills_bedwars || 0,
             neg: stats.final_deaths_bedwars || 0,
-            ratio: ((stats.final_kills_bedwars || 0) / (stats.final_deaths_bedwars || 0)).toFixed(2)
+            ratio: ratio((stats.final_kills_bedwars || 0), (stats.final_deaths_bedwars || 0))
         },
         {
             name: 'Beds',
             icon: ITEMS.BED,
             pos: stats.beds_broken_bedwars || 0,
             neg: stats.beds_lost_bedwars || 0,
-            ratio: ((stats.beds_broken_bedwars || 0) / (stats.beds_lost_bedwars || 0)).toFixed(2)
+            ratio: ratio((stats.beds_broken_bedwars || 0), (stats.beds_lost_bedwars || 0))
         },
         {
             name: 'Wins',
             icon: ITEMS.FIREWORK,
             pos: stats.wins_bedwars || 0,
             neg: stats.losses_bedwars || 0,
-            ratio: ((stats.wins_bedwars || 0) / (stats.losses_bedwars || 0)).toFixed(2)
+            ratio: ratio((stats.wins_bedwars || 0), (stats.losses_bedwars || 0))
         }
     ];
 
@@ -192,7 +195,7 @@ async function playerStats(wrapper: CanvasWrapper, stats: Bedwars, x: number, y:
         const { icon, name, pos, neg, ratio } = stat;
 
         await wrapper.drawTexture(icon, x, currentY, 16, 16); // Adjust the size of the icon if needed
-        wrapper.drawText(`<white>${name}:</white> <green>${pos.toLocaleString()}</green> <white>/</white> <red>${neg.toLocaleString()}</red> <white>/</white> <gold>${ratio.toLocaleString()}</gold>`, x + 24, currentY + 13, true);
+        wrapper.drawText(`<white>${name}:</white> <green>${f(pos)}</green> <white>/</white> <red>${f(neg)}</red> <white>/</white> <gold>${ratio.toLocaleString()}</gold>`, x + 24, currentY + 13, true);
 
         currentY += lineHeight;
     }
@@ -238,7 +241,7 @@ async function otherStats(wrapper: CanvasWrapper, stats: Bedwars, x: number, y: 
         const { icon, name, value, color } = stat;
 
         await wrapper.drawTexture(icon, x, currentY, 16, 16); // Adjust the size of the icon if needed
-        wrapper.drawText(`<white>${name}:</white> <${color}>${value.toLocaleString()}</${color}>`, x + 24, currentY + 13, true);
+        wrapper.drawText(`<white>${name}:</white> <${color}>${f(value)}</${color}>`, x + 24, currentY + 13, true);
 
         currentY += lineHeight;
     }
