@@ -26,11 +26,21 @@ const command: Command = {
         .addSubcommand(command => command
             .setName("start")
             .setDescription("Starts a new session")
+            .addStringOption(option => option
+                .setName("name")
+                .setDescription("The name of the session")
+            )
         )
-        // .addSubcommand(command => command
-        //     .setName("list")
-        //     .setDescription("List your sessions")
-        // )
+        .addSubcommand(command => command
+            .setName("delete")
+            .setDescription("Delete a session")
+            .addStringOption(option => option
+                .setName("session")
+                .setDescription("The ID of the session you wish to delete")
+                .setRequired(true)
+                .setAutocomplete(true)
+            )
+        )
         .addSubcommand(command => command
             .setName("view")
             .setDescription("View a session")
@@ -48,15 +58,16 @@ const command: Command = {
         const options = interaction.data.options as [{ type: number, options: [], name: string, value?: string }];
         const subcommand = options.find((option) => option.type === 1);
 
+        const sessionName: Option = subcommand.options.find((option: Option) => option.name === "name");
         const sessionId: Option = subcommand.options.find((option: Option) => option.name === "session");
 
         switch (subcommand.name) {
             case "start":
-                await startSubcommand(interaction);
+                await startSubcommand(interaction, sessionName.value);
                 return;
-            // case "list":
-            //     await listSubcommand(interaction);
-            //     return;
+            case "delete":
+                await deleteSubcommand(interaction, sessionId.value);
+                return;
             case "view":
                 await viewSubcommand(interaction, sessionId.value);
                 return;
@@ -77,8 +88,9 @@ const command: Command = {
 
         await interactions.createAutocompleteResponse(interaction.id, interaction.token, {
             choices: playerSessions.map((session) => {
+                const date = new Date(session.started * 1000).toLocaleString();
                 return {
-                    name: new Date(session.started * 1000).toLocaleString(),
+                    name: `${session.name} (${date})` || date,
                     value: session.id
                 }
             })
@@ -86,7 +98,7 @@ const command: Command = {
     }
 }
 
-async function startSubcommand(interaction) {
+async function startSubcommand(interaction, name: string) {
     const uuid = await getPlayer(interaction.member.user.id);
     const sessions = await mongo.getCollection<Session>("sessions");
 
@@ -97,6 +109,7 @@ async function startSubcommand(interaction) {
 
     await sessions.insertOne({
         id: sessionId,
+        name: name || undefined,
         started: Math.floor(Date.now() / 1000),
         ownerId: uuid,
 
@@ -119,20 +132,27 @@ async function startSubcommand(interaction) {
     });
 
     return interactions.followUp(config.appId, interaction.token, {
-        content: `Started session \`${sessionId}\``
+        embeds: FeedbackMessage.success(`Created session \`${name || sessionId}\`.`).embeds.map((embed) => embed.toJSON())
     });
 }
 
-async function listSubcommand(interaction) {
+async function deleteSubcommand(interaction, sessionId: string) {
     const sessions = await mongo.getCollection<Session>("sessions");
     const player = await getPlayer(interaction.member.user.id);
 
-    const playerSessions = await sessions.find({
+    const result = await sessions.findOneAndDelete({
+        id: sessionId,
         ownerId: player
-    }).toArray();
+    });
+
+    if (!result.value) {
+        return interactions.followUp(config.appId, interaction.token, {
+            embeds: FeedbackMessage.error("Session not found").embeds.map((embed) => embed.toJSON())
+        });
+    }
 
     return interactions.followUp(config.appId, interaction.token, {
-        content: playerSessions.map((session) => `\`${session.id}\``).join(", ")
+        embeds: FeedbackMessage.success(`Deleted session \`${sessionId}\`.`).embeds.map((embed) => embed.toJSON())
     });
 }
 

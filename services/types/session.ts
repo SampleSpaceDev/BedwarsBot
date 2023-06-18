@@ -1,4 +1,5 @@
 export interface Session {
+    name?: string;
     id: string;
     started: number;
     ownerId: string;
