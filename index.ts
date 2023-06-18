@@ -29,10 +29,6 @@ const gateway = new WebSocketManager({
 
 const client = new Client({ rest, gateway });
 
-// (async function slashCommands() {
-//     const slashCommandApi = new ApplicationCommandsAPI(rest);
-//
-// })();
 
 export const webhooks: WebhooksAPI = new WebhooksAPI(rest);
 export const interactions: InteractionsAPI = new InteractionsAPI(rest, webhooks);
