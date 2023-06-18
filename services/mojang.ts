@@ -1,4 +1,6 @@
 import axios, { AxiosInstance } from "axios";
+import { ExpiringCache } from "../util/cache";
+import { PlayerTag } from "./hypixel";
 
 interface PlayerDbResponse {
     code: string,
@@ -25,18 +27,24 @@ interface PlayerDbErrorResponse {
 
 export class MojangApiService {
     private playerDb: AxiosInstance;
+    private cache: ExpiringCache<PlayerDbResponse>
 
     public constructor() {
         this.playerDb = axios.create({
             baseURL: "https://playerdb.co/api/player/minecraft/",
             timeout: 10_000
         });
+
+        this.cache = new ExpiringCache<PlayerDbResponse>(3 * 60 * 60 * 1000);
     }
 
     public async getPlayer(tag: string) {
-        const [formattedTag, type] = this.parseTag(tag);
+        if (this.cache.get(tag)) {
+            console.log(`Read from cache ${tag}`);
+            return this.cache.get(tag);
+        }
 
-        return this.getData<PlayerDbResponse>(tag).catch((e) => {
+        const response = await this.getData<PlayerDbResponse>(tag).catch((e) => {
             if (!e.response || !e.response.data) {
                 throw new Error();
             }
@@ -48,13 +56,14 @@ export class MojangApiService {
 
             throw new Error();
         });
+
+        this.cache.set(response.data.player.username, response);
+
+        return response;
     }
 
-    private parseTag(tag: string): [tag: string, type: string] {
-        tag = tag.replace("-", "");
-        const type = tag.length >= 32 ? "uuid" : "name";
-    
-        return [tag, type];
+    private parseTag(tag: string): PlayerTag {
+        return tag.length >= 32 ? "uuid" : "name";
     }
 
     private async getData<T>(input: string): Promise<T> {

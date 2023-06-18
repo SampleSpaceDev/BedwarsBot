@@ -3,12 +3,14 @@ import axios, { AxiosInstance } from "axios";
 import * as config from "../config.json";
 import logger from "../util/logging";
 import { COLORS } from "../assets/constants";
+import { ExpiringCache } from "../util/cache";
 
 export type PlayerTag = "name" | "uuid" | "none";
 type Stats = "Bedwars";
 
 export class HypixelApiService {
     private hypixel: AxiosInstance;
+    private cache: ExpiringCache<PlayerResponse>
 
     public constructor() {
         this.hypixel = axios.create({
@@ -19,9 +21,16 @@ export class HypixelApiService {
                 "API-Key": config.apiKey
             }
         });
+
+        this.cache = new ExpiringCache<PlayerResponse>(30 * 60 * 1000);
     }
 
     public async getPlayer(type: PlayerTag, tag: string): Promise<PlayerResponse> {
+        if (this.cache.get(tag)) {
+            logger.info(`Read from cache ${tag}`);
+            return this.cache.get(tag);
+        }
+
         const player = await this.hypixel.get<PlayerResponse>(``, {
             params: {
                 [type]: tag
