@@ -55,7 +55,7 @@ export class CanvasWrapper {
 
     public drawText(text: string, x: number, y: number, shadow: boolean) {
         const styleStack: TextStyle[] = [];
-        let currentStyle: TextStyle = { color: "red" };
+        let currentStyle: TextStyle = { color: COLORS.WHITE };
 
         const openTag = (tag: string) => {
             if (tag.startsWith("#")) {
@@ -123,8 +123,21 @@ export class CanvasWrapper {
         }
     }
 
-    async drawPlayer(id: string, x: number, y: number, width: number, height: number): Promise<void | FeedbackMessage> {
-        const imageUrl = `https://visage.surgeplay.com/full/${id}.png`;
+    async drawPlayer(id: string, x: number, y: number, options: {
+        type: "head" | "body" | "full";
+        rotation?: number;
+        yaw?: number;
+        pitch?: number;
+        size?: number;
+    }): Promise<{ width: number, height: number } | FeedbackMessage> {
+        const rotations = [
+            options.rotation ? `r=${options.rotation}` : ``,
+            options.pitch ? `p=${options.pitch}` : ``,
+            options.yaw ? `y=${options.yaw}` : ``,
+        ];
+
+        const imageUrl =
+            `https://visage.surgeplay.com/${options.type}${options.type !== "full" ? `/${options.size}` : ""}/${id}.png${rotations.some(r => Boolean(r)) ? `?${rotations.join("&")}` : ""}`;
         const buffer = await urlToBuffer(imageUrl);
 
         if (buffer instanceof FeedbackMessage) {
@@ -132,7 +145,9 @@ export class CanvasWrapper {
         }
 
         const image = await loadImage(buffer);
-        this.ctx.drawImage(image, x, y, width, height);
+        this.ctx.drawImage(image, x, y, image.width, image.height);
+
+        return { width: image.width, height: image.height };
     }
 
     public drawLine(x: number, y: number, length: number, color: string, opacity: number) {
