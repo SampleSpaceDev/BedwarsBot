@@ -2,6 +2,7 @@ import { join } from "node:path";
 import { existsSync } from "node:fs";
 import { mongo } from "../services";
 import { LinkedPlayer } from "../services/types";
+import { Duration } from "moment";
 
 const PATH = "../../assets";
 const PRIVATE_PATH = join(PATH, "private");
@@ -19,6 +20,8 @@ export type RemoveMethods<T> = Pick<
 
 export const noop = <T>() => null as unknown as T;
 
+export const ratio = (a, b): string => (b === 0 ? "∞" : (a / b).toFixed(2));
+
 export const getAssetPath = (path: string) => join(PATH, checkAsset(path), path);
 
 export const stripColor = (string: string) => string.replace(/<\/?[^>]+(>|$)|<#[^>]+(>|$)/g, "");
@@ -33,3 +36,17 @@ export async function getPlayer(discordId: string): Promise<string> {
 }
 
 export const randomId = () => Math.random().toString(16).substring(2, 9);
+
+export const formatDate = (duration: Duration) => {
+    const units = ['y', 'mo', 'w', 'd', 'h', 'm'];
+    const values = [duration.years(), duration.months(), duration.weeks(), duration.days(), duration.hours(), duration.minutes()];
+
+    return units.reduce((result, unit, index) => {
+        if (values[index] > 1) {
+            result += `${values[index]}${unit} `;
+        }
+        return result;
+    }, '').trim();
+}
+
+export const f = (number: number) => Math.round(number).toLocaleString();
