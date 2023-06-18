@@ -20,7 +20,7 @@ export type RemoveMethods<T> = Pick<
 
 export const noop = <T>() => null as unknown as T;
 
-export const ratio = (a, b): string => (b === 0 ? "∞" : (a / b).toFixed(2));
+export const ratio = (a: number, b: number): string => (b === 0 ? "∞" : (a / b).toFixed(2));
 
 export const getAssetPath = (path: string) => join(PATH, checkAsset(path), path);
 
