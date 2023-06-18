@@ -1,0 +1,49 @@
+name: Deploy as Docker container
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+  
+    steps:
+    - name: Check out the repo
+      uses: actions/checkout@v3
+
+    - name: Deploy to Staging server
+      uses: easingthemes/ssh-deploy@main
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        REMOTE_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+        REMOTE_USER: ${{ secrets.DEPLOY_SSH_USER }}
+        TARGET: ${{ secrets.DEPLOY_TARGET_DIR }}
+        SOURCE: ""
+    
+    - name: Rebuild Docker image
+      uses: appleboy/ssh-action@v0.1.6
+      with:
+        host: ${{ secrets.DEPLOY_SSH_HOST }}
+        username: ${{ secrets.DEPLOY_SSH_USER }}
+        key: ${{ secrets.DEPLOY_SSH_KEY }}
+        script: ${{ secrets.DEPLOY_BUILD_DOCKER_COMMAND }}
+        script_stop: true
+    
+    - name: Stop old Docker container
+      uses: appleboy/ssh-action@v0.1.6
+      with:
+        host: ${{ secrets.DEPLOY_SSH_HOST }}
+        username: ${{ secrets.DEPLOY_SSH_USER }}
+        key: ${{ secrets.DEPLOY_SSH_KEY }}
+        script: ${{ secrets.DEPLOY_STOP_DOCKER_COMMAND }}
+    
+    - name: Start Docker container
+      uses: appleboy/ssh-action@v0.1.6
+      with:
+        host: ${{ secrets.DEPLOY_SSH_HOST }}
+        username: ${{ secrets.DEPLOY_SSH_USER }}
+        key: ${{ secrets.DEPLOY_SSH_KEY }}
+        script: ${{ secrets.DEPLOY_START_DOCKER_COMMAND }}
+        script_stop: true
