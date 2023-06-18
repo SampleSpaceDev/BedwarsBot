@@ -17,7 +17,7 @@ import fs from "fs";
 import axios from "axios";
 
 const heartbeatUrl = "https://status.samplespace.dev/api/push/6RqKRC8aZD?status=up&msg=OK&ping=";
-const statusWebhook = "";
+const statusWebhook = "https://discord.com/api/webhooks/1055185320108368053/Kp_qWDPE-TcCanYCxdsuKzGozF-F6PNpua7ciyWuamZYIp66Jg-S7dEj8WRtVSZFEJTD";
 
 const rest = new REST({ version: '10' }).setToken(config.token);
 
