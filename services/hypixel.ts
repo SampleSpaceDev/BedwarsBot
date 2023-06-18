@@ -44,6 +44,8 @@ export class HypixelApiService {
             return;
         }
 
+        this.cache.set(tag, player.data);
+
         return player.data;
     }
 
