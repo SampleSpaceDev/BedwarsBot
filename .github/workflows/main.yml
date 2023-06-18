@@ -13,6 +13,10 @@ jobs:
     - name: Check out the repo
       uses: actions/checkout@v3
 
+    - name: Store commit information
+      run: |
+        echo -e $"${{ github.event.head_commit.id }}\n${{ github.event.head_commit.message }}" > commit.txt
+
     - name: Deploy to Staging server
       uses: easingthemes/ssh-deploy@main
       env:
