@@ -3,9 +3,9 @@ FROM node:19
 WORKDIR /app
 
 COPY package*.json ./
+COPY yarn.lock ./
 
-RUN apt install node-typescript \
-    && yarn install
+RUN yarn install
 
 COPY . .
 
