@@ -4,8 +4,8 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN yarn install \
-    && yarn add -g typescript \
+RUN apt install node-typescript \
+    && yarn install \
 
 COPY . .
 
