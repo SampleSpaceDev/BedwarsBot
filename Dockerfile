@@ -1,11 +1,10 @@
 FROM node:19
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install -g yarn \
-    && yarn install \
+RUN yarn install \
     && yarn add -g typescript \
 
 COPY . .
