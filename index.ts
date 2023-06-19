@@ -24,7 +24,8 @@ const rest = new REST({ version: '10' }).setToken(config.token);
 const gateway = new WebSocketManager({
     token: config.token,
     intents: GatewayIntentBits.Guilds | GatewayIntentBits.MessageContent,
-    rest
+    rest,
+    shardCount: 1
 });
 
 const client = new Client({ rest, gateway });
