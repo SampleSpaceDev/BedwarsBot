@@ -45,12 +45,14 @@ client.once(GatewayDispatchEvents.Ready, async () => {
             activities: [
                 {
                     name: `Mango v${properties.version}`,
-                    type: ActivityType.Custom
+                    type: ActivityType.Watching
                 }
             ],
             afk: false,
             since: Date.now()
-        })
+        }).catch((error) => {
+            logger.error(error);
+        });
     }
 
     const commit = extractCommitInfo();
