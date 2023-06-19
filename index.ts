@@ -101,13 +101,13 @@ client.on(GatewayDispatchEvents.InteractionCreate, async ({ data: rawInteraction
 
         try {
             await interactions.reply(interaction.id, interaction.token, {
-                embeds: FeedbackMessage.error(error.message).embeds.map((embed) => embed.toJSON()),
+                embeds: FeedbackMessage.error(`\`\`\`ansi\n${error.message}\n\`\`\``).embeds.map((embed) => embed.toJSON()),
                 flags: 64
             });
         } catch (err) {
             try {
                 await interactions.followUp(config.appId, interaction.token, {
-                    embeds: FeedbackMessage.error(error.message).embeds.map((embed) => embed.toJSON()),
+                    embeds: FeedbackMessage.error(`\`\`\`ansi\n${error.message}\n\`\`\``).embeds.map((embed) => embed.toJSON()),
                     flags: 64
                 });
             } catch (e) {
