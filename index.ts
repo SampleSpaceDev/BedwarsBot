@@ -104,7 +104,7 @@ client.on(GatewayDispatchEvents.InteractionCreate, async ({ data: rawInteraction
                 embeds: FeedbackMessage.error(error.message).embeds.map((embed) => embed.toJSON()),
                 flags: 64
             });
-        } catch (error) {
+        } catch (err) {
             try {
                 await interactions.followUp(config.appId, interaction.token, {
                     embeds: FeedbackMessage.error(error.message).embeds.map((embed) => embed.toJSON()),
