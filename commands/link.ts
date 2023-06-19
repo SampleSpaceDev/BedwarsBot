@@ -2,7 +2,7 @@ import { Command } from "./types/base";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { interactions } from "../index";
 import { hypixel, mojang, mongo } from "../services";
-import { LinkedPlayer, Player } from "../services/types";
+import {LinkedPlayer, Player, PlayerResponse} from "../services/types";
 import { FeedbackMessage } from "../messages/error";
 import * as config from "../config.json";
 
@@ -25,7 +25,15 @@ const command: Command = {
 
         const profile = (await mojang.getPlayer(tag)).data.player;
 
-        const player = (await hypixel.getPlayer("uuid", profile.id)).player as Player;
+        let player: PlayerResponse | FeedbackMessage | Player = (await hypixel.getPlayer("uuid", profile.id));
+
+        if (player instanceof FeedbackMessage) {
+            return interactions.followUp(config.appId, interaction.token, {
+                embeds: player.embeds.map((embed) => embed.toJSON())
+            });
+        }
+        player = player.player as Player;
+
         const discord = player.socialMedia?.links?.DISCORD;
 
         if (!discord) {

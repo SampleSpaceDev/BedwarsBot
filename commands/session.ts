@@ -4,7 +4,7 @@ import { FeedbackMessage } from "../messages/error";
 import * as config from "../config.json";
 import { interactions } from "../index";
 import { hypixel, mongo } from "../services";
-import {Bedwars, BedwarsSession, Session} from "../services/types";
+import {Bedwars, BedwarsSession, Player, PlayerResponse, Session} from "../services/types";
 import { f, formatDate, getPlayer, randomId, ratio, stripColor } from "../util";
 import {
     APIApplicationCommandAutocompleteInteraction,
@@ -151,7 +151,15 @@ const getDifferences = (session: Session, stats: Bedwars, level: number): Differ
 }
 
 async function buildImage(interaction, session: Session) {
-    const player = (await hypixel.getPlayer("uuid", session.ownerId)).player;
+    let player: PlayerResponse | FeedbackMessage | Player = (await hypixel.getPlayer("uuid", session.ownerId));
+
+    if (player instanceof FeedbackMessage) {
+        return interactions.followUp(config.appId, interaction.token, {
+            embeds: player.embeds.map((embed) => embed.toJSON())
+        });
+    }
+    player = player.player as Player;
+
     const stats = player.stats.Bedwars as Bedwars;
 
     const differences = getDifferences(session, stats, player.achievements.bedwars_level);
@@ -312,13 +320,20 @@ class Subcommands {
         const uuid = await getPlayer(interaction.member.user.id);
         const sessions = await mongo.getCollection<Session>("sessions");
 
-        const player = (await hypixel.getPlayer("uuid", uuid)).player;
+        let player: PlayerResponse | FeedbackMessage | Player = (await hypixel.getPlayer("uuid", uuid));
+
+        if (player instanceof FeedbackMessage) {
+            return interactions.followUp(config.appId, interaction.token, {
+                embeds: player.embeds.map((embed) => embed.toJSON())
+            });
+        }
+        player = player.player as Player;
         const stats = player.stats.Bedwars as Bedwars;
 
         const result = await sessions.findOneAndUpdate(
             {
                 id: sessionId,
-                ownerId: player,
+                ownerId: uuid,
                 isEnded: false
             },
             {
@@ -361,7 +376,12 @@ class Subcommands {
         const uuid = await getPlayer(interaction.member.user.id);
         const sessions = await mongo.getCollection<Session>("sessions");
 
-        const player = (await hypixel.getPlayer("uuid", uuid)).player;
+        let player = await Subcommands.getBedwarsStats(interaction, uuid);
+        if (typeof player === "function") {
+            return;
+        }
+        player = player as Player;
+
         const stats = player.stats.Bedwars as Bedwars;
 
         const sessionId = randomId();
@@ -393,6 +413,17 @@ class Subcommands {
         return interactions.followUp(config.appId, interaction.token, {
             embeds: FeedbackMessage.success(`Created session \`${sessionName || sessionId}\`.`).embeds.map((embed) => embed.toJSON())
         });
+    }
+
+    private static getBedwarsStats = async(interaction, uuid: string): Promise<Player | void> => {
+        let player: PlayerResponse | FeedbackMessage | Player = (await hypixel.getPlayer("uuid", uuid));
+
+        if (player instanceof FeedbackMessage) {
+            return interactions.followUp(config.appId, interaction.token, {
+                embeds: player.embeds.map((embed) => embed.toJSON())
+            });
+        }
+        return player.player as Player;
     }
 }
 

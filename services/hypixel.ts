@@ -2,8 +2,9 @@ import { Player, PlayerResponse } from "./types";
 import axios, { AxiosInstance } from "axios";
 import * as config from "../config.json";
 import logger from "../util/logging";
-import { COLORS } from "../assets/constants";
+import {COLORS, missingPlayer} from "../assets/constants";
 import { ExpiringCache } from "../util/cache";
+import {FeedbackMessage} from "../messages/error";
 
 export type PlayerTag = "name" | "uuid" | "none";
 type Stats = "Bedwars";
@@ -25,7 +26,7 @@ export class HypixelApiService {
         this.cache = new ExpiringCache<PlayerResponse>(30 * 60 * 1000);
     }
 
-    public async getPlayer(type: PlayerTag, tag: string): Promise<PlayerResponse> {
+    public async getPlayer(type: PlayerTag, tag: string): Promise<PlayerResponse | FeedbackMessage> {
         if (this.cache.get(tag)) {
             return this.cache.get(tag);
         }
@@ -36,8 +37,12 @@ export class HypixelApiService {
             }
         }).catch((error) => {
             logger.error(error);
-            return;
+            return missingPlayer(type, tag);
         });
+
+        if (player instanceof FeedbackMessage) {
+            return player;
+        }
 
         if (!player || !player.data) {
             return;
@@ -48,8 +53,12 @@ export class HypixelApiService {
         return player.data;
     }
 
-    public async getStats(type: PlayerTag, tag: string, game: Stats): Promise<any> {
+    public async getStats(type: PlayerTag, tag: string, game: Stats): Promise<any | FeedbackMessage> {
         const player = await this.getPlayer(type, tag);
+
+        if (player instanceof FeedbackMessage) {
+            return player;
+        }
 
         if (!player || !player.player) {
             return;

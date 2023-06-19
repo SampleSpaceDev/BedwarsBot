@@ -2,7 +2,7 @@ import { Command } from "./types/base";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { mojang, hypixel } from "../services";
 import { interactions } from "../index";
-import { Bedwars } from "../services/types";
+import {Bedwars, Player, PlayerResponse} from "../services/types";
 import { defaultCanvas } from "../assets";
 import { COLORS, ITEMS, TITLES } from "../assets/constants";
 import { CanvasWrapper } from "../util/canvas";
@@ -41,7 +41,15 @@ const command: Command = {
 
         const profile = (await mojang.getPlayer(tag)).data.player;
 
-        const player = (await hypixel.getPlayer("uuid", profile.id)).player;
+        let player: PlayerResponse | FeedbackMessage | Player = (await hypixel.getPlayer("uuid", profile.id));
+
+        if (player instanceof FeedbackMessage) {
+            return interactions.followUp(config.appId, interaction.token, {
+                embeds: player.embeds.map((embed) => embed.toJSON())
+            });
+        }
+        player = player.player as Player;
+
         const stats = player.stats.Bedwars as Bedwars;
 
         if (stats === undefined) {
