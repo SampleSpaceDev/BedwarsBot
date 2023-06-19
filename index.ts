@@ -18,6 +18,7 @@ import * as config from "./config.json";
 import {registerFonts} from "./assets";
 import fs from "fs";
 import axios from "axios";
+import {FeedbackMessage} from "./messages/error";
 
 const rest = new REST({ version: '10' }).setToken(config.token);
 
@@ -97,6 +98,22 @@ client.on(GatewayDispatchEvents.InteractionCreate, async ({ data: rawInteraction
     } catch (error) {
         logger.error(error);
         console.error(error);
+
+        try {
+            await interactions.reply(interaction.id, interaction.token, {
+                embeds: FeedbackMessage.error(error.message).embeds.map((embed) => embed.toJSON()),
+                flags: 64
+            });
+        } catch (error) {
+            try {
+                await interactions.followUp(config.appId, interaction.token, {
+                    embeds: FeedbackMessage.error(error.message).embeds.map((embed) => embed.toJSON()),
+                    flags: 64
+                });
+            } catch (e) {
+                logger.error(`Failed to respond to interaction ${interaction.id}.`);
+            }
+        }
     }
 });
 
