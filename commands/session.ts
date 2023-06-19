@@ -130,8 +130,8 @@ async function startSubcommand(interaction, name?: string) {
     await sessions.insertOne({
         id: sessionId,
         name: name || undefined,
-        started: Math.floor(Date.now() / 1000),
         ownerId: uuid,
+        started: Math.floor(Date.now() / 1000),
 
         start: {
             bedwars: {
@@ -166,11 +166,12 @@ async function endSubcommand(interaction, sessionId: string) {
     const result = await sessions.findOneAndUpdate(
         {
             id: sessionId,
-            ownerId: player
+            ownerId: player,
+            isEnded: false
         },
         {
             $set: {
-                ended: true,
+                isEnded: true,
 
                 end: {
                     bedwars: {
@@ -191,6 +192,12 @@ async function endSubcommand(interaction, sessionId: string) {
             }
         }
     );
+
+    if (!result.value) {
+        return interactions.followUp(config.appId, interaction.token, {
+            embeds: FeedbackMessage.error("Session not found or already ended").embeds.map((embed) => embed.toJSON())
+        });
+    }
 
     return interactions.followUp(config.appId, interaction.token, {
         embeds: FeedbackMessage.success(
@@ -345,7 +352,7 @@ async function buildImage(interaction, session: Session) {
     [
         `<white>Coins:</white> <gold>${f(differences.overall.coins)}</gold>`,
         `<white>Experience:</white> <aqua>${f(differences.overall.experience)}</aqua>`,
-        `<white>Length:</white> <yellow>${formatDate(moment.duration((Date.now() / 1000) - session.started, "seconds"))}</yellow>`,
+        `<white>Length:</white> <yellow>${formatDate(moment.duration(((session.ended || Date.now()) / 1000) - session.started, "seconds"))}</yellow>`,
     ].forEach((stat, i) => wrapper.drawText(stat, 20, 325 + (i * 25), true));
 
     wrapper.drawText(`<white>Per Day:</white>`, 20, 400, true);

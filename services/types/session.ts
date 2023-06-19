@@ -1,9 +1,11 @@
 export interface Session {
     name?: string;
     id: string;
-    started: number;
     ownerId: string;
-    ended?: boolean;
+
+    started: number;
+    ended?: number;
+    isEnded?: boolean;
 
     start: {
         bedwars: BedwarsSession;
