@@ -1,18 +1,21 @@
-import { REST } from "@discordjs/rest";
-import { WebSocketManager } from "@discordjs/ws";
+import {REST} from "@discordjs/rest";
+import {WebSocketManager} from "@discordjs/ws";
 import {
+    ActivityType,
+    APIChatInputApplicationCommandInteraction,
+    Client,
     GatewayDispatchEvents,
     GatewayIntentBits,
+    InteractionsAPI,
     InteractionType,
-    Client,
-    InteractionsAPI, WebhooksAPI,
-    APIChatInputApplicationCommandInteraction
+    PresenceUpdateStatus,
+    WebhooksAPI
 } from "@discordjs/core";
 
 import logger from "./util/logging";
-import { registerCommands, commands } from "./util/slashCommands";
+import {commands, registerCommands} from "./util/slashCommands";
 import * as config from "./config.json";
-import { registerFonts } from "./assets";
+import {registerFonts} from "./assets";
 import fs from "fs";
 import axios from "axios";
 
@@ -26,7 +29,6 @@ const gateway = new WebSocketManager({
 
 const client = new Client({ rest, gateway });
 
-
 export const webhooks: WebhooksAPI = new WebhooksAPI(rest);
 export const interactions: InteractionsAPI = new InteractionsAPI(rest, webhooks);
 
@@ -35,6 +37,21 @@ export const properties = JSON.parse(packageJson);
 
 client.once(GatewayDispatchEvents.Ready, async () => {
     logger.info("[CLIENT] Client online.");
+
+    const shards = await gateway.getShardIds();
+    for (let shard of shards) {
+        await client.updatePresence(shard, {
+            status: PresenceUpdateStatus.Online,
+            activities: [
+                {
+                    name: `Mango v${properties.version}`,
+                    type: ActivityType.Custom
+                }
+            ],
+            afk: false,
+            since: Date.now()
+        })
+    }
 
     const commit = extractCommitInfo();
     if (commit) {
