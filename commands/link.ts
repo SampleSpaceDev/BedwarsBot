@@ -2,9 +2,10 @@ import { Command } from "./types/base";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { interactions } from "../index";
 import { hypixel, mojang, mongo } from "../services";
-import {LinkedPlayer, Player, PlayerResponse} from "../services/types";
+import { LinkedPlayer, Player } from "../services/types";
 import { FeedbackMessage } from "../messages/error";
 import * as config from "../config.json";
+import { missingPlayer } from "../assets/constants";
 
 const command: Command = {
     data: new SlashCommandBuilder()
@@ -23,16 +24,14 @@ const command: Command = {
         const options = interaction.data.options as { value: string }[];
         const tag = options[0].value;
 
-        const profile = (await mojang.getPlayer(tag)).data.player;
-
-        let player: PlayerResponse | FeedbackMessage | Player = (await hypixel.getPlayer("uuid", profile.id));
-
-        if (player instanceof FeedbackMessage) {
+        const profile = (await mojang.getPlayer(tag));
+        if (!profile.success) {
             return interactions.followUp(config.appId, interaction.token, {
-                embeds: player.embeds.map((embed) => embed.toJSON())
+                embeds: missingPlayer(mojang.parseTag(tag), tag).embeds.map((embed) => embed.toJSON())
             });
         }
-        player = player.player as Player;
+
+        const player: Player = (await hypixel.getPlayer("uuid", profile.data.player.id)).player;
 
         const discord = player.socialMedia?.links?.DISCORD;
 
@@ -54,10 +53,10 @@ const command: Command = {
         const collection = await mongo.getCollection<LinkedPlayer>("players");
         await collection.insertOne({
             id: interaction.member.user.id,
-            uuid: profile.id
+            uuid: profile.data.player.id
         })
 
-        const success = FeedbackMessage.success(`Your Discord account has been linked to \`${profile.username}\`.`);
+        const success = FeedbackMessage.success(`Your Discord account has been linked to \`${profile.data.player.username}\`.`);
         return interactions.followUp(config.appId, interaction.token, {
             embeds: success.embeds.map((embed) => embed.toJSON())
         });

@@ -2,9 +2,9 @@ import { Command } from "./types/base";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { mojang, hypixel } from "../services";
 import { interactions } from "../index";
-import {Bedwars, Player, PlayerResponse} from "../services/types";
+import { Bedwars, Player } from "../services/types";
 import { defaultCanvas } from "../assets";
-import { COLORS, ITEMS, TITLES } from "../assets/constants";
+import {COLORS, ITEMS, missingPlayer, TITLES} from "../assets/constants";
 import { CanvasWrapper } from "../util/canvas";
 import { getLevelProgress, getPrestige, getPrestigeProgress } from "../util/prestige";
 import { FeedbackMessage } from "../messages/error";
@@ -39,17 +39,14 @@ const command: Command = {
             tag = options[0]?.value;
         }
 
-        const profile = (await mojang.getPlayer(tag)).data.player;
-
-        let player: PlayerResponse | FeedbackMessage | Player = (await hypixel.getPlayer("uuid", profile.id));
-
-        if (player instanceof FeedbackMessage) {
+        const profile = (await mojang.getPlayer(tag));
+        if (!profile.success) {
             return interactions.followUp(config.appId, interaction.token, {
-                embeds: player.embeds.map((embed) => embed.toJSON())
+                embeds: missingPlayer(mojang.parseTag(tag), tag).embeds.map((embed) => embed.toJSON())
             });
         }
-        player = player.player as Player;
 
+        const player = (await hypixel.getPlayer("uuid", profile.data.player.id)).player as Player;
         const stats = player.stats.Bedwars as Bedwars;
 
         if (stats === undefined) {
@@ -63,7 +60,7 @@ const command: Command = {
         const ctx = await defaultCanvas("Bedwars");
         const wrapper = new CanvasWrapper(ctx);
 
-        TITLES.Stats(ctx, { name: profile.username, rankColor: hypixel.getRankColor(player) });
+        TITLES.Stats(ctx, { name: profile.data.player.username, rankColor: hypixel.getRankColor(player) });
 
         ctx.font = "20px Minecraft, Arial";
         wrapper.roundedRect(10, 60, ctx.canvas.width - 20, 55, COLORS.WHITE, 0.2);
@@ -78,7 +75,7 @@ const command: Command = {
         await projectedStats(wrapper, stats, remainingWidth + 10, 145, (player.achievements.bedwars_level || 0));
 
         wrapper.roundedRect(10, 245, ctx.canvas.width - 20, ctx.canvas.height - 245 - 10, COLORS.WHITE, 0.2);
-        const error = await wrapper.drawPlayer(profile.id, 10, 250, {
+        const error = await wrapper.drawPlayer(profile.data.player.id, 10, 250, {
             type: "full"
         });
 

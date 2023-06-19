@@ -17,14 +17,6 @@ interface PlayerDbResponse {
     success: boolean
 }
 
-interface PlayerDbErrorResponse {
-    message: string,
-    code: string,
-    data: {},
-    success: boolean,
-    error: boolean
-}
-
 export class MojangApiService {
     private playerDb: AxiosInstance;
     private cache: ExpiringCache<PlayerDbResponse>
@@ -43,25 +35,16 @@ export class MojangApiService {
             return this.cache.get(tag);
         }
 
-        const response = await this.getData<PlayerDbResponse>(tag).catch((e) => {
-            if (!e.response || !e.response.data) {
-                throw new Error();
-            }
+        const response = await this.getData<PlayerDbResponse>(tag);
 
-            const error = e.response.data as PlayerDbErrorResponse;
-            if (error.code === "minecraft.api_failure") {
-                throw new Error(`Unknown player: ${tag}`);
-            }
-
-            throw new Error();
-        });
-
-        this.cache.set(response.data.player.username, response);
+        if (response.success) {
+            this.cache.set(response.data.player.username, response);
+        }
 
         return response;
     }
 
-    private parseTag(tag: string): PlayerTag {
+    public parseTag(tag: string): PlayerTag {
         return tag.length >= 32 ? "uuid" : "name";
     }
 
