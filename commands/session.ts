@@ -25,7 +25,7 @@ const command: Command = {
         .setDescription("View and manage your sessions")
         .addSubcommand(command => command
             .setName("start")
-            .setDescription("Starts a new session")
+            .setDescription("Starts a new session, optionally with a name")
             .addStringOption(option => option
                 .setName("name")
                 .setDescription("The name of the session")
@@ -36,13 +36,14 @@ const command: Command = {
             .setDescription("Rename a session")
             .addStringOption(option => option
                 .setName("session")
-                .setDescription("The ID of the session you wish to view")
+                .setDescription("The ID of the session you wish to rename")
                 .setRequired(true)
                 .setAutocomplete(true)
             )
             .addStringOption(option => option
                 .setName("name")
                 .setDescription("The new name of the session")
+                .setRequired(true)
             )
         )
         .addSubcommand(command => command
@@ -77,19 +78,19 @@ const command: Command = {
 
         switch (subcommand.name) {
             case "start":
-                await startSubcommand(interaction, sessionName?.value || undefined);
+                await Subcommands.start(interaction, sessionName?.value || undefined);
                 return;
             case "end":
-                await endSubcommand(interaction, sessionId.value);
+                await Subcommands.end(interaction, sessionId.value);
                 return;
             case "rename":
-                await renameSubcommand(interaction, sessionId.value, sessionName.value);
+                await Subcommands.rename(interaction, sessionId.value, sessionName.value);
                 return;
             case "delete":
-                await deleteSubcommand(interaction, sessionId.value);
+                await Subcommands.delete(interaction, sessionId.value);
                 return;
             case "view":
-                await viewSubcommand(interaction, sessionId.value);
+                await Subcommands.view(interaction, sessionId.value);
                 return;
             default:
                 const error = FeedbackMessage.error("Invalid subcommand");
@@ -116,171 +117,6 @@ const command: Command = {
             })
         });
     }
-}
-
-async function startSubcommand(interaction, name?: string) {
-    const uuid = await getPlayer(interaction.member.user.id);
-    const sessions = await mongo.getCollection<Session>("sessions");
-
-    const player = (await hypixel.getPlayer("uuid", uuid)).player;
-    const stats = player.stats.Bedwars as Bedwars;
-
-    const sessionId = randomId();
-
-    await sessions.insertOne({
-        id: sessionId,
-        name: name || undefined,
-        ownerId: uuid,
-        started: Math.floor(Date.now() / 1000),
-
-        start: {
-            bedwars: {
-                wins: stats.wins_bedwars,
-                losses: stats.losses_bedwars,
-                kills: stats.kills_bedwars,
-                deaths: stats.deaths_bedwars,
-                finalKills: stats.final_kills_bedwars,
-                finalDeaths: stats.final_deaths_bedwars,
-                bedsBroken: stats.beds_broken_bedwars,
-                bedsLost: stats.beds_lost_bedwars,
-                gamesPlayed: stats.games_played_bedwars,
-                level: player.achievements.bedwars_level,
-                coins: stats.coins,
-                experience: stats.Experience
-            }
-        }
-    });
-
-    return interactions.followUp(config.appId, interaction.token, {
-        embeds: FeedbackMessage.success(`Created session \`${name || sessionId}\`.`).embeds.map((embed) => embed.toJSON())
-    });
-}
-
-async function endSubcommand(interaction, sessionId: string) {
-    const uuid = await getPlayer(interaction.member.user.id);
-    const sessions = await mongo.getCollection<Session>("sessions");
-
-    const player = (await hypixel.getPlayer("uuid", uuid)).player;
-    const stats = player.stats.Bedwars as Bedwars;
-
-    const result = await sessions.findOneAndUpdate(
-        {
-            id: sessionId,
-            ownerId: player,
-            isEnded: false
-        },
-        {
-            $set: {
-                isEnded: true,
-
-                end: {
-                    bedwars: {
-                        wins: stats.wins_bedwars,
-                        losses: stats.losses_bedwars,
-                        kills: stats.kills_bedwars,
-                        deaths: stats.deaths_bedwars,
-                        finalKills: stats.final_kills_bedwars,
-                        finalDeaths: stats.final_deaths_bedwars,
-                        bedsBroken: stats.beds_broken_bedwars,
-                        bedsLost: stats.beds_lost_bedwars,
-                        gamesPlayed: stats.games_played_bedwars,
-                        level: player.achievements.bedwars_level,
-                        coins: stats.coins,
-                        experience: stats.Experience
-                    }
-                }
-            }
-        }
-    );
-
-    if (!result.value) {
-        return interactions.followUp(config.appId, interaction.token, {
-            embeds: FeedbackMessage.error("Session not found or already ended").embeds.map((embed) => embed.toJSON())
-        });
-    }
-
-    return interactions.followUp(config.appId, interaction.token, {
-        embeds: FeedbackMessage.success(
-            `Session \`${result.value.name || result.value.id}\` ended. You can still view it using </session view:1119607952316301343>. Use </session delete:1119607952316301343> to delete it.`
-        ).embeds.map((embed) => embed.toJSON())
-    });
-}
-
-async function renameSubcommand(interaction, sessionId: string, sessionName: string) {
-    const sessions = await mongo.getCollection<Session>("sessions");
-    const player = await getPlayer(interaction.member.user.id);
-
-    const result = await sessions.findOneAndUpdate(
-        {
-            id: sessionId,
-            ownerId: player
-        },
-        {
-            $set: {
-                name: sessionName
-            }
-        }
-    );
-
-    if (!result.value) {
-        return interactions.followUp(config.appId, interaction.token, {
-            embeds: FeedbackMessage.error("Session not found").embeds.map((embed) => embed.toJSON())
-        });
-    }
-
-    return interactions.followUp(config.appId, interaction.token, {
-        embeds: FeedbackMessage.success(`Renamed session \`${sessionId}\` to ${sessionName}.`).embeds.map((embed) => embed.toJSON())
-    });
-}
-
-async function deleteSubcommand(interaction, sessionId: string) {
-    const sessions = await mongo.getCollection<Session>("sessions");
-    const player = await getPlayer(interaction.member.user.id);
-
-    const result = await sessions.findOneAndDelete({
-        id: sessionId,
-        ownerId: player
-    });
-
-    if (!result.value) {
-        return interactions.followUp(config.appId, interaction.token, {
-            embeds: FeedbackMessage.error("Session not found").embeds.map((embed) => embed.toJSON())
-        });
-    }
-
-    return interactions.followUp(config.appId, interaction.token, {
-        embeds: FeedbackMessage.success(`Deleted session \`${result.value.name || sessionId}\`.`).embeds.map((embed) => embed.toJSON())
-    });
-}
-
-async function viewSubcommand(interaction, id: string) {
-    const sessions = await mongo.getCollection<Session>("sessions");
-    const session = await sessions.findOne({ id });
-
-    if (!session) {
-        const error = FeedbackMessage.error("Session not found");
-        return interactions.followUp(config.appId, interaction.token, {
-            embeds: error.embeds.map((embed) => embed.toJSON())
-        });
-    }
-
-    const player = await getPlayer(interaction.member.user.id);
-
-    if (session.ownerId !== player) {
-        const error = FeedbackMessage.error("You do not own this session");
-        return interactions.followUp(config.appId, interaction.token, {
-            embeds: error.embeds.map((embed) => embed.toJSON())
-        });
-    }
-
-    const image = await buildImage(interaction, session);
-
-    await interactions.followUp(config.appId, interaction.token, {
-        files: [{
-            name: "stats.png",
-            data: await (image as Canvas).toBuffer("png")
-        }]
-    });
 }
 
 type Differences = {
@@ -404,6 +240,169 @@ async function buildImage(interaction, session: Session) {
     await TITLES.Footer(ctx, ctx.canvas.width - 158 - 20, 190 + skinRender.height + 20, 158);
 
     return ctx.canvas;
+}
+
+class Subcommands {
+    public static view = async(interaction, sessionId: string) => {
+        const sessions = await mongo.getCollection<Session>("sessions");
+        const session = await sessions.findOne({ id: sessionId });
+
+        if (!session) {
+            const error = FeedbackMessage.error("Session not found");
+            return interactions.followUp(config.appId, interaction.token, {
+                embeds: error.embeds.map((embed) => embed.toJSON())
+            });
+        }
+
+        const player = await getPlayer(interaction.member.user.id);
+
+        if (session.ownerId !== player) {
+            const error = FeedbackMessage.error("You do not own this session");
+            return interactions.followUp(config.appId, interaction.token, {
+                embeds: error.embeds.map((embed) => embed.toJSON())
+            });
+        }
+
+        const image = await buildImage(interaction, session);
+
+        await interactions.followUp(config.appId, interaction.token, {
+            files: [{
+                name: "stats.png",
+                data: await (image as Canvas).toBuffer("png")
+            }]
+        });
+    }
+    public static delete = async(interaction, sessionId: string) => {
+        const sessions = await mongo.getCollection<Session>("sessions");
+        const player = await getPlayer(interaction.member.user.id);
+
+        const result = await sessions.findOneAndDelete({
+            id: sessionId,
+            ownerId: player
+        });
+
+        if (!result.value) {
+            return interactions.followUp(config.appId, interaction.token, {
+                embeds: FeedbackMessage.error("Session not found").embeds.map((embed) => embed.toJSON())
+            });
+        }
+
+        return interactions.followUp(config.appId, interaction.token, {
+            embeds: FeedbackMessage.success(`Deleted session \`${result.value.name || sessionId}\`.`).embeds.map((embed) => embed.toJSON())
+        });
+    }
+    public static rename = async(interaction, sessionId: string, sessionName: string) => {
+        const sessions = await mongo.getCollection<Session>("sessions");
+        const player = await getPlayer(interaction.member.user.id);
+
+        const result = await sessions.findOneAndUpdate(
+            {
+                id: sessionId,
+                ownerId: player
+            },
+            {
+                $set: {
+                    name: sessionName
+                }
+            }
+        );
+
+        if (!result.value) {
+            return interactions.followUp(config.appId, interaction.token, {
+                embeds: FeedbackMessage.error("Session not found").embeds.map((embed) => embed.toJSON())
+            });
+        }
+
+        return interactions.followUp(config.appId, interaction.token, {
+            embeds: FeedbackMessage.success(`Renamed session \`${sessionId}\` to \`${sessionName}\`.`).embeds.map((embed) => embed.toJSON())
+        });
+    }
+    public static end = async(interaction, sessionId: string) => {
+        const uuid = await getPlayer(interaction.member.user.id);
+        const sessions = await mongo.getCollection<Session>("sessions");
+
+        const player = (await hypixel.getPlayer("uuid", uuid)).player;
+        const stats = player.stats.Bedwars as Bedwars;
+
+        const result = await sessions.findOneAndUpdate(
+            {
+                id: sessionId,
+                ownerId: player,
+                isEnded: false
+            },
+            {
+                $set: {
+                    isEnded: true,
+
+                    end: {
+                        bedwars: {
+                            wins: stats.wins_bedwars,
+                            losses: stats.losses_bedwars,
+                            kills: stats.kills_bedwars,
+                            deaths: stats.deaths_bedwars,
+                            finalKills: stats.final_kills_bedwars,
+                            finalDeaths: stats.final_deaths_bedwars,
+                            bedsBroken: stats.beds_broken_bedwars,
+                            bedsLost: stats.beds_lost_bedwars,
+                            gamesPlayed: stats.games_played_bedwars,
+                            level: player.achievements.bedwars_level,
+                            coins: stats.coins,
+                            experience: stats.Experience
+                        }
+                    }
+                }
+            }
+        );
+
+        if (!result.value) {
+            return interactions.followUp(config.appId, interaction.token, {
+                embeds: FeedbackMessage.error("Session not found or already ended").embeds.map((embed) => embed.toJSON())
+            });
+        }
+
+        return interactions.followUp(config.appId, interaction.token, {
+            embeds: FeedbackMessage.success(
+                `Session \`${result.value.name || result.value.id}\` ended. You can still view it using </session view:1119607952316301343>. Use </session delete:1119607952316301343> to delete it.`
+            ).embeds.map((embed) => embed.toJSON())
+        });
+    }
+    public static start = async(interaction, sessionName?: string) => {
+        const uuid = await getPlayer(interaction.member.user.id);
+        const sessions = await mongo.getCollection<Session>("sessions");
+
+        const player = (await hypixel.getPlayer("uuid", uuid)).player;
+        const stats = player.stats.Bedwars as Bedwars;
+
+        const sessionId = randomId();
+
+        await sessions.insertOne({
+            id: sessionId,
+            name: sessionName || undefined,
+            ownerId: uuid,
+            started: Math.floor(Date.now() / 1000),
+
+            start: {
+                bedwars: {
+                    wins: stats.wins_bedwars,
+                    losses: stats.losses_bedwars,
+                    kills: stats.kills_bedwars,
+                    deaths: stats.deaths_bedwars,
+                    finalKills: stats.final_kills_bedwars,
+                    finalDeaths: stats.final_deaths_bedwars,
+                    bedsBroken: stats.beds_broken_bedwars,
+                    bedsLost: stats.beds_lost_bedwars,
+                    gamesPlayed: stats.games_played_bedwars,
+                    level: player.achievements.bedwars_level,
+                    coins: stats.coins,
+                    experience: stats.Experience
+                }
+            }
+        });
+
+        return interactions.followUp(config.appId, interaction.token, {
+            embeds: FeedbackMessage.success(`Created session \`${sessionName || sessionId}\`.`).embeds.map((embed) => embed.toJSON())
+        });
+    }
 }
 
 export default command;
