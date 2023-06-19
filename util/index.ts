@@ -9,7 +9,7 @@ export type RemoveMethods<T> = Pick<
 >;
 
 
-export const ratio = (a: number, b: number): string => (a === 0 && b === 0 ? "∞" : (a / Math.max(1, b)).toFixed(2));
+export const ratio = (a: number, b: number): string => (a === 0 && b === 0 ? "0" : (a / Math.max(1, b)).toFixed(2));
 
 export const stripColor = (string: string) => string.replace(/<\/?[^>]+(>|$)|<#[^>]+(>|$)/g, "");
 
