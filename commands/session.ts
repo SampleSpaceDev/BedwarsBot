@@ -173,7 +173,7 @@ async function buildImage(interaction, session: Session) {
         `<white>Levels Gained:</white> <green>${f(player.achievements.bedwars_level - session.start.bedwars.level)}</green> <white>-</white> ${getPrestige(session.start.bedwars.level)} <white>➜</white> ${getPrestige(player.achievements.bedwars_level)}`, 20, 145, true);
 
     const levelsToPrestige = 100 - player.achievements.bedwars_level % 100;
-    wrapper.drawText(`<white>Est.</white> ${getPrestige(player.achievements.bedwars_level + levelsToPrestige)} <white>Date:</white> <yellow>${perDay.level > 0 ? moment().add(Math.round(levelsToPrestige * perDay.level), "days").format("MMM Do YYYY") : "Cannot calculate"}</yellow>`, 20, 170, true);
+    wrapper.drawText(`<white>Est.</white> ${getPrestige(player.achievements.bedwars_level + levelsToPrestige)} <white>Date:</white> <yellow>${perDay.level > 0 ? moment().add(Math.round(levelsToPrestige / perDay.level), "days").format("MMM Do YYYY") : "Cannot calculate"}</yellow>`, 20, 170, true);
 
     wrapper.roundedRect(10, 190, ctx.canvas.width - 158 - 50, 105, COLORS.WHITE, 0.2);
     wrapper.roundedRect(10, 305, ctx.canvas.width - 158 - 50, 185, COLORS.WHITE, 0.2);
