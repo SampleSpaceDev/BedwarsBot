@@ -4,7 +4,7 @@ import { FeedbackMessage } from "../messages/error";
 import * as config from "../config.json";
 import { interactions } from "../index";
 import { hypixel, mongo } from "../services";
-import { Bedwars, Session } from "../services/types";
+import {Bedwars, BedwarsSession, Session} from "../services/types";
 import { f, formatDate, getPlayer, randomId, ratio, stripColor } from "../util";
 import {
     APIApplicationCommandAutocompleteInteraction,
@@ -78,6 +78,9 @@ const command: Command = {
         switch (subcommand.name) {
             case "start":
                 await startSubcommand(interaction, sessionName?.value || undefined);
+                return;
+            case "end":
+                await endSubcommand(interaction, sessionId.value);
                 return;
             case "rename":
                 await renameSubcommand(interaction, sessionId.value, sessionName.value);
@@ -153,6 +156,49 @@ async function startSubcommand(interaction, name?: string) {
     });
 }
 
+async function endSubcommand(interaction, sessionId: string) {
+    const uuid = await getPlayer(interaction.member.user.id);
+    const sessions = await mongo.getCollection<Session>("sessions");
+
+    const player = (await hypixel.getPlayer("uuid", uuid)).player;
+    const stats = player.stats.Bedwars as Bedwars;
+
+    const result = await sessions.findOneAndUpdate(
+        {
+            id: sessionId,
+            ownerId: player
+        },
+        {
+            $set: {
+                ended: true,
+
+                end: {
+                    bedwars: {
+                        wins: stats.wins_bedwars,
+                        losses: stats.losses_bedwars,
+                        kills: stats.kills_bedwars,
+                        deaths: stats.deaths_bedwars,
+                        finalKills: stats.final_kills_bedwars,
+                        finalDeaths: stats.final_deaths_bedwars,
+                        bedsBroken: stats.beds_broken_bedwars,
+                        bedsLost: stats.beds_lost_bedwars,
+                        gamesPlayed: stats.games_played_bedwars,
+                        level: player.achievements.bedwars_level,
+                        coins: stats.coins,
+                        experience: stats.Experience
+                    }
+                }
+            }
+        }
+    );
+
+    return interactions.followUp(config.appId, interaction.token, {
+        embeds: FeedbackMessage.success(
+            `Session \`${result.value.name || result.value.id}\` ended. You can still view it using </session view:1119607952316301343>. Use </session delete:1119607952316301343> to delete it.`
+        ).embeds.map((embed) => embed.toJSON())
+    });
+}
+
 async function renameSubcommand(interaction, sessionId: string, sessionName: string) {
     const sessions = await mongo.getCollection<Session>("sessions");
     const player = await getPlayer(interaction.member.user.id);
@@ -176,7 +222,7 @@ async function renameSubcommand(interaction, sessionId: string, sessionName: str
     }
 
     return interactions.followUp(config.appId, interaction.token, {
-        embeds: FeedbackMessage.success(`Deleted session \`${sessionId}\`.`).embeds.map((embed) => embed.toJSON())
+        embeds: FeedbackMessage.success(`Renamed session \`${sessionId}\` to ${sessionName}.`).embeds.map((embed) => embed.toJSON())
     });
 }
 
@@ -196,7 +242,7 @@ async function deleteSubcommand(interaction, sessionId: string) {
     }
 
     return interactions.followUp(config.appId, interaction.token, {
-        embeds: FeedbackMessage.success(`Deleted session \`${sessionId}\`.`).embeds.map((embed) => embed.toJSON())
+        embeds: FeedbackMessage.success(`Deleted session \`${result.value.name || sessionId}\`.`).embeds.map((embed) => embed.toJSON())
     });
 }
 
@@ -231,61 +277,42 @@ async function viewSubcommand(interaction, id: string) {
 }
 
 type Differences = {
-    wins: { name: string, value: number },
-    losses: { name: string, value: number },
-    kills: { name: string, value: number },
-    deaths: { name: string, value: number },
-    finalKills: { name: string, value: number },
-    finalDeaths: { name: string, value: number },
-    bedsBroken: { name: string, value: number },
-    bedsLost: { name: string, value: number },
-    gamesPlayed: { name: string, value: number },
-    level: { name: string, value: number },
-    coins: { name: string, value: number },
-    experience: { name: string, value: number },
+    overall: BedwarsSession,
+    perDay: {}
 }
 
-const calcDifferences = (session: Session, stats: Bedwars, level: number): Differences => {
-    return {
-        wins:        { name: "Wins", value: stats.wins_bedwars - session.start.bedwars.wins },
-        losses:      { name: "Losses", value: stats.losses_bedwars - session.start.bedwars.losses },
-        kills:       { name: "Kills", value: stats.kills_bedwars - session.start.bedwars.kills },
-        deaths:      { name: "Deaths", value: stats.deaths_bedwars - session.start.bedwars.deaths },
-        finalKills:  { name: "Final Kills", value: stats.final_kills_bedwars - session.start.bedwars.finalKills },
-        finalDeaths: { name: "Final Deaths", value: stats.final_deaths_bedwars - session.start.bedwars.finalDeaths },
-        bedsBroken:  { name: "Beds Broken", value: stats.beds_broken_bedwars - session.start.bedwars.bedsBroken },
-        bedsLost:    { name: "Beds Lost", value: stats.beds_lost_bedwars - session.start.bedwars.bedsLost },
-        gamesPlayed: { name: "Games Played", value: stats.games_played_bedwars - session.start.bedwars.gamesPlayed },
-        level:       { name: "Levels", value: level - session.start.bedwars.level },
-        coins:       { name: "Coins", value: stats.coins - session.start.bedwars.coins },
-        experience:  { name: "Experience", value: stats.Experience - session.start.bedwars.experience },
-    };
-}
+const getDifferences = (session: Session, stats: Bedwars, level: number): Differences => {
+    const daysSinceStart = Math.max(1, Math.floor((Date.now() / 1000 - session.started) / 86400));
 
-const calcPerDay = (start: number, differences: Differences): Differences => {
-    const daysSinceStart = Math.floor((Date.now() / 1000 - start) / 86400);
-    return {
-        wins:        { name: "Wins", value: differences.wins.value / daysSinceStart },
-        losses:      { name: "Losses", value: differences.losses.value / daysSinceStart },
-        kills:       { name: "Kills", value: differences.kills.value / daysSinceStart },
-        deaths:      { name: "Deaths", value: differences.deaths.value / daysSinceStart },
-        finalKills:  { name: "Final Kills", value: differences.finalKills.value / daysSinceStart },
-        finalDeaths: { name: "Final Deaths", value: differences.finalDeaths.value / daysSinceStart },
-        bedsBroken:  { name: "Beds Broken", value: differences.bedsBroken.value / daysSinceStart },
-        bedsLost:    { name: "Beds Lost", value: differences.bedsLost.value / daysSinceStart },
-        gamesPlayed: { name: "Games Played", value: differences.gamesPlayed.value / daysSinceStart },
-        level:       { name: "Level", value: differences.level.value / daysSinceStart },
-        coins:       { name: "Coins", value: differences.coins.value / daysSinceStart },
-        experience:  { name: "Experience", value: differences.experience.value / daysSinceStart },
-    };
+    const overall = {
+        wins: (session.ended ? session.end.bedwars.wins : stats.wins_bedwars) - session.start.bedwars.wins,
+        losses: (session.ended ? session.end.bedwars.losses : stats.losses_bedwars) - session.start.bedwars.losses,
+        kills: (session.ended ? session.end.bedwars.kills : stats.kills_bedwars) - session.start.bedwars.kills,
+        deaths: (session.ended ? session.end.bedwars.deaths : stats.deaths_bedwars) - session.start.bedwars.deaths,
+        finalKills: (session.ended ? session.end.bedwars.finalKills : stats.final_kills_bedwars) - session.start.bedwars.finalKills,
+        finalDeaths: (session.ended ? session.end.bedwars.finalDeaths : stats.final_deaths_bedwars) - session.start.bedwars.finalDeaths,
+        bedsBroken: (session.ended ? session.end.bedwars.bedsBroken : stats.beds_broken_bedwars) - session.start.bedwars.bedsBroken,
+        bedsLost: (session.ended ? session.end.bedwars.bedsLost : stats.beds_lost_bedwars) - session.start.bedwars.bedsLost,
+        gamesPlayed: (session.ended ? session.end.bedwars.gamesPlayed : stats.games_played_bedwars) - session.start.bedwars.gamesPlayed,
+        level: (session.ended ? session.end.bedwars.level : level) - session.start.bedwars.level,
+        coins: (session.ended ? session.end.bedwars.coins : stats.coins) - session.start.bedwars.coins,
+        experience: (session.ended ? session.end.bedwars.experience : stats.Experience) - session.start.bedwars.experience,
+    }
+    
+    const perDay: {} = Object.keys(overall).reduce((acc, key) => {
+        acc[key] = overall[key] / daysSinceStart;
+        return acc;
+    }, {});
+    
+    return { overall, perDay: perDay };
 }
 
 async function buildImage(interaction, session: Session) {
     const player = (await hypixel.getPlayer("uuid", session.ownerId)).player;
     const stats = player.stats.Bedwars as Bedwars;
 
-    const differences = calcDifferences(session, stats, player.achievements.bedwars_level);
-    const statsPerDay = calcPerDay(session.started, differences);
+    const differences = getDifferences(session, stats, player.achievements.bedwars_level);
+    const perDay = differences.perDay as BedwarsSession;
 
     const ctx = await defaultCanvas("Bedwars");
     const wrapper = new CanvasWrapper(ctx);
@@ -296,47 +323,47 @@ async function buildImage(interaction, session: Session) {
     wrapper.roundedRect(10, 60, ctx.canvas.width - 20, 55, COLORS.WHITE, 0.2);
 
     wrapper.drawText(`<white>Session started:</white> <yellow>${new Date(session.started * 1000).toLocaleString()}</yellow>`, 20, 80, true);
-    wrapper.drawText(`<white>Games Played:</white> <green>${f(differences.gamesPlayed.value)}</green>`, 20, 105, true);
+    wrapper.drawText(`<white>Games Played:</white> <green>${f(differences.overall.gamesPlayed)}</green>`, 20, 105, true);
 
     wrapper.roundedRect(10, 125, ctx.canvas.width - 20, 55, COLORS.WHITE, 0.2);
     wrapper.drawText(
         `<white>Levels Gained:</white> <green>${f(player.achievements.bedwars_level - session.start.bedwars.level)}</green> <white>-</white> ${getPrestige(session.start.bedwars.level)} <white>➜</white> ${getPrestige(player.achievements.bedwars_level)}`, 20, 145, true);
 
     const levelsToPrestige = 100 - player.achievements.bedwars_level % 100;
-    wrapper.drawText(`<white>Est.</white> ${getPrestige(player.achievements.bedwars_level + levelsToPrestige)} <white>Date:</white> <yellow>${moment().add(Math.round(levelsToPrestige * statsPerDay.level.value), "days").format("MMM Do YYYY")}</yellow>`, 20, 170, true);
+    wrapper.drawText(`<white>Est.</white> ${getPrestige(player.achievements.bedwars_level + levelsToPrestige)} <white>Date:</white> <yellow>${moment().add(Math.round(levelsToPrestige * perDay.level), "days").format("MMM Do YYYY")}</yellow>`, 20, 170, true);
 
     wrapper.roundedRect(10, 190, ctx.canvas.width - 158 - 50, 105, COLORS.WHITE, 0.2);
     wrapper.roundedRect(10, 305, ctx.canvas.width - 158 - 50, 185, COLORS.WHITE, 0.2);
 
     [
-        `<white>Kills:</white> <green>${f(differences.kills.value)}</green> <white>/</white> <red>${f(differences.deaths.value)}</red> <white>/</white> <gold>${ratio(differences.kills.value, differences.deaths.value)}</gold>`,
-        `<white>Finals:</white> <green>${f(differences.finalKills.value)}</green> <white>/</white> <red>${f(differences.finalDeaths.value)}</red> <white>/</white> <gold>${ratio(differences.finalKills.value, differences.finalDeaths.value)}</gold>`,
-        `<white>Beds:</white> <green>${f(differences.bedsBroken.value)}</green> <white>/</white> <red>${f(differences.bedsLost.value)}</red> <white>/</white> <gold>${ratio(differences.bedsBroken.value, differences.bedsLost.value)}</gold>`,
-        `<white>Wins:</white> <green>${f(differences.wins.value)}</green> <white>/</white> <red>${f(differences.losses.value)}</red> <white>/</white> <gold>${ratio(differences.wins.value, differences.losses.value)}</gold>`,
+        `<white>Kills:</white> <green>${f(differences.overall.kills)}</green> <white>/</white> <red>${f(differences.overall.deaths)}</red> <white>/</white> <gold>${ratio(differences.overall.kills, differences.overall.deaths)}</gold>`,
+        `<white>Finals:</white> <green>${f(differences.overall.finalKills)}</green> <white>/</white> <red>${f(differences.overall.finalDeaths)}</red> <white>/</white> <gold>${ratio(differences.overall.finalKills, differences.overall.finalDeaths)}</gold>`,
+        `<white>Beds:</white> <green>${f(differences.overall.bedsBroken)}</green> <white>/</white> <red>${f(differences.overall.bedsLost)}</red> <white>/</white> <gold>${ratio(differences.overall.bedsBroken, differences.overall.bedsLost)}</gold>`,
+        `<white>Wins:</white> <green>${f(differences.overall.wins)}</green> <white>/</white> <red>${f(differences.overall.losses)}</red> <white>/</white> <gold>${ratio(differences.overall.wins, differences.overall.losses)}</gold>`,
     ].forEach((stat, i) => wrapper.drawText(stat, 20, 210 + (i * 25), true));
 
     [
-        `<white>Coins:</white> <gold>${f(differences.coins.value)}</gold>`,
-        `<white>Experience:</white> <aqua>${f(differences.experience.value)}</aqua>`,
+        `<white>Coins:</white> <gold>${f(differences.overall.coins)}</gold>`,
+        `<white>Experience:</white> <aqua>${f(differences.overall.experience)}</aqua>`,
         `<white>Length:</white> <yellow>${formatDate(moment.duration((Date.now() / 1000) - session.started, "seconds"))}</yellow>`,
     ].forEach((stat, i) => wrapper.drawText(stat, 20, 325 + (i * 25), true));
 
     wrapper.drawText(`<white>Per Day:</white>`, 20, 400, true);
     wrapper.font("16px Minecraft, Arial");
-    const perDay = [
-        `<white>Kills:</white> <green>${f(Math.floor(statsPerDay.kills.value))}</green> <white>/</white> <red>${f(Math.floor(statsPerDay.deaths.value))}</red>`,
-        `<white>Finals:</white> <green>${f(Math.floor(statsPerDay.finalKills.value))}</green> <white>/</white> <red>${f(Math.floor(statsPerDay.finalDeaths.value))}</red>`,
-        `<white>Beds:</white> <green>${f(Math.floor(statsPerDay.bedsBroken.value))}</green> <white>/</white> <red>${f(Math.floor(statsPerDay.bedsLost.value))}</red>`,
-        `<white>Wins:</white> <green>${f(Math.floor(statsPerDay.wins.value))}</green> <white>/</white> <red>${f(Math.floor(statsPerDay.losses.value))}</red>`,
-        `<white>Coins:</white> <gold>${f(Math.floor(statsPerDay.coins.value))}</gold>`,
-        `<white>XP:</white> <aqua>${f(Math.floor(statsPerDay.experience.value))}</aqua>`,
-        `<white>Levels:</white> <dark_aqua>${statsPerDay.level.value.toFixed(2)}</dark_aqua>`,
-        `<white>FKDR:</white> <gold>${ratio(statsPerDay.finalKills.value, statsPerDay.finalDeaths.value)}</gold>`
+    const perDayStats = [
+        `<white>Kills:</white> <green>${f(Math.floor(perDay.kills))}</green> <white>/</white> <red>${f(Math.floor(perDay.deaths))}</red>`,
+        `<white>Finals:</white> <green>${f(Math.floor(perDay.finalKills))}</green> <white>/</white> <red>${f(Math.floor(perDay.finalDeaths))}</red>`,
+        `<white>Beds:</white> <green>${f(Math.floor(perDay.bedsBroken))}</green> <white>/</white> <red>${f(Math.floor(perDay.bedsLost))}</red>`,
+        `<white>Wins:</white> <green>${f(Math.floor(perDay.wins))}</green> <white>/</white> <red>${f(Math.floor(perDay.losses))}</red>`,
+        `<white>Coins:</white> <gold>${f(Math.floor(perDay.coins))}</gold>`,
+        `<white>XP:</white> <aqua>${f(Math.floor(perDay.experience))}</aqua>`,
+        `<white>Levels:</white> <dark_aqua>${perDay.level.toFixed(2)}</dark_aqua>`,
+        `<white>FKDR:</white> <gold>${ratio(perDay.finalKills, perDay.finalDeaths)}</gold>`
     ];
 
     // Split perDay into arrays of size 4
-    const split = Array.from({ length: Math.ceil(perDay.length / 4) }, (_, index) =>
-        perDay.slice(index * 4, index * 4 + 4)
+    const split = Array.from({ length: Math.ceil(perDayStats.length / 4) }, (_, index) =>
+        perDayStats.slice(index * 4, index * 4 + 4)
     );
 
     let x = 20;
