@@ -314,7 +314,7 @@ class Subcommands {
         }
 
         return interactions.followUp(config.appId, interaction.token, {
-            embeds: FeedbackMessage.success(`Renamed session \`${sessionId}\` to \`${sessionName}\`.`).embeds.map((embed) => embed.toJSON())
+            embeds: FeedbackMessage.success(`Renamed session \`${result.value.name || sessionId}\` to \`${sessionName}\`.`).embeds.map((embed) => embed.toJSON())
         });
     }
     public static end = async(interaction, sessionId: string) => {
