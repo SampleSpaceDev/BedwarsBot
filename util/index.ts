@@ -2,6 +2,13 @@ import { mongo } from "../services";
 import { LinkedPlayer } from "../services/types";
 import { Duration } from "moment";
 
+export type RemoveMethods<T> = Pick<
+  T,
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  { [Key in keyof T]: T[Key] extends Function ? never : Key }[keyof T]
+>;
+
+
 export const ratio = (a: number, b: number): string => (a === 0 && b === 0 ? "∞" : (a / Math.max(1, b)).toFixed(2));
 
 export const stripColor = (string: string) => string.replace(/<\/?[^>]+(>|$)|<#[^>]+(>|$)/g, "");
