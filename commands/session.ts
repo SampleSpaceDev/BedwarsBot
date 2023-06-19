@@ -254,15 +254,6 @@ class Subcommands {
             });
         }
 
-        const player = await getPlayer(interaction.member.user.id);
-
-        if (session.ownerId !== player) {
-            const error = FeedbackMessage.error("You do not own this session");
-            return interactions.followUp(config.appId, interaction.token, {
-                embeds: error.embeds.map((embed) => embed.toJSON())
-            });
-        }
-
         const image = await buildImage(interaction, session);
 
         await interactions.followUp(config.appId, interaction.token, {
