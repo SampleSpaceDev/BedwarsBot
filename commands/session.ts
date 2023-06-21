@@ -351,10 +351,16 @@ class Subcommands {
             });
         }
 
+        const image = await buildImage(interaction, result.value);
+
         return interactions.followUp(config.appId, interaction.token, {
             embeds: FeedbackMessage.success(
                 `Session \`${result.value.name || result.value.id}\` ended. You can still view it using </session view:1119607952316301343>. Use </session delete:1119607952316301343> to delete it.`
-            ).embeds.map((embed) => embed.toJSON())
+            ).embeds.map((embed) => embed.toJSON()),
+            files: [{
+                name: "stats.png",
+                data: await (image as Canvas).toBuffer("png")
+            }]
         });
     }
     public static start = async(interaction, sessionName?: string) => {
