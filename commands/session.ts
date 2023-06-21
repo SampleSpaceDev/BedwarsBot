@@ -237,7 +237,7 @@ async function buildImage(interaction, session: Session) {
         });
     }
 
-    await TITLES.Footer(ctx, ctx.canvas.width - 158 - 20, 190 + skinRender.height + 20, 158);
+    await TITLES.Footer(ctx, 500 - 158 - 20, 190 + skinRender.height + 20, 158);
 
     return ctx.canvas;
 }
