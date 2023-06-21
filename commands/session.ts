@@ -359,6 +359,13 @@ class Subcommands {
     }
     public static start = async(interaction, sessionName?: string) => {
         const uuid = await getPlayer(interaction.member.user.id);
+
+        if (!uuid) {
+            return interactions.followUp(config.appId, interaction.token, {
+                embeds: FeedbackMessage.error("You need to link your account first. Use </link:1119652679052972152>.").embeds.map((embed) => embed.toJSON())
+            });
+        }
+
         const sessions = await mongo.getCollection<Session>("sessions");
 
         const player = (await hypixel.getPlayer("uuid", uuid)).player as Player;
