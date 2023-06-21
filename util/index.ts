@@ -29,7 +29,7 @@ export const formatDate = (duration: Duration) => {
     const values = [duration.years(), duration.months(), duration.weeks(), duration.days(), duration.hours(), duration.minutes()];
 
     return units.reduce((result, unit, index) => {
-        if (values[index] > 1) {
+        if (values[index] >= 1) {
             result += `${values[index]}${unit} `;
         }
         return result;
