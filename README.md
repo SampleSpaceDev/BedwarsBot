@@ -9,7 +9,7 @@ This bot is made using [DiscordJS v14](https://discord.js.org/), and utilises th
 - - -
 ## **Example Embed**
 
-<div><img height = 510px width = 510px align="left" src="img\statsExample1.png" alt="Super cool lachy man image"></div>
+<div><img height = 520px width = 520px align="left" src="img\statsExample1.png" alt="Super cool lachy man image"></div>
 
 <div align = "center" style="margin=20px; padding="50px; font-size=50px;">
   <h2>✨ Currently <em>Mango</em> can display ✨</h2>
