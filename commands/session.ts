@@ -5,7 +5,7 @@ import * as config from "../config.json";
 import { interactions } from "../index";
 import { hypixel, mongo } from "../services";
 import { Bedwars, BedwarsSession, Player, Session } from "../services/types";
-import { f, formatDate, getPlayer, randomId, ratio, stripColor } from "../util";
+import {f, formatDate, formatTime, getPlayer, randomId, ratio, stripColor} from "../util";
 import {
     APIApplicationCommandAutocompleteInteraction,
     APIApplicationCommandInteractionDataStringOption
@@ -165,7 +165,7 @@ async function buildImage(interaction, session: Session) {
     ctx.font = "20px Minecraft, Arial";
     wrapper.roundedRect(10, 60, ctx.canvas.width - 20, 55, COLORS.WHITE, 0.2);
 
-    wrapper.drawText(`<white>Session started:</white> <yellow>${new Date(session.started * 1000).toLocaleString()}</yellow>`, 20, 80, true);
+    wrapper.drawText(`<white>Session started:</white> <yellow>${formatDate(moment(session.started * 1000))}</yellow>`, 20, 80, true);
     wrapper.drawText(`<white>Games Played:</white> <green>${f(differences.overall.gamesPlayed)}</green>`, 20, 105, true);
 
     wrapper.roundedRect(10, 125, ctx.canvas.width - 20, 55, COLORS.WHITE, 0.2);
@@ -188,7 +188,7 @@ async function buildImage(interaction, session: Session) {
     [
         `<white>Coins:</white> <gold>${f(differences.overall.coins)}</gold>`,
         `<white>Experience:</white> <aqua>${f(differences.overall.experience)}</aqua>`,
-        `<white>Length:</white> <yellow>${formatDate(moment.duration(((session.ended || Date.now()) / 1000) - session.started, "seconds"))}</yellow>`,
+        `<white>Length:</white> <yellow>${formatTime(moment.duration(((session.ended || Date.now()) / 1000) - session.started, "seconds"))}</yellow>`,
     ].forEach((stat, i) => wrapper.drawText(stat, 20, 325 + (i * 25), true));
 
     wrapper.drawText(`<white>Per Day:</white>`, 20, 400, true);

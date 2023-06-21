@@ -1,6 +1,6 @@
 import { mongo } from "../services";
 import { LinkedPlayer } from "../services/types";
-import { Duration } from "moment";
+import { Duration, Moment } from "moment";
 
 export type RemoveMethods<T> = Pick<
   T,
@@ -24,7 +24,7 @@ export async function getPlayer(discordId: string): Promise<string> {
 
 export const randomId = () => Math.random().toString(16).substring(2, 9);
 
-export const formatDate = (duration: Duration) => {
+export const formatTime = (duration: Duration) => {
     const units = ['y', 'mo', 'w', 'd', 'h', 'm'];
     const values = [duration.years(), duration.months(), duration.weeks(), duration.days(), duration.hours(), duration.minutes()];
 
@@ -35,5 +35,7 @@ export const formatDate = (duration: Duration) => {
         return result;
     }, '').trim();
 }
+
+export const formatDate = (moment: Moment) => moment.format('MMM Do YYYY, h:mm:ss a');
 
 export const f = (number: number) => Math.round(number).toLocaleString();
