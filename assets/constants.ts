@@ -4,7 +4,7 @@ import { properties } from "../index";
 import { FeedbackMessage } from "../messages/error";
 import { ButtonBuilder } from "@discordjs/builders";
 import { ButtonStyle } from "discord-api-types/v10";
-import { PlayerTag } from "../services/hypixel";
+import { PlayerTag } from "../services/api/hypixel";
 import { drawTitleText } from "./index";
 
 export const COLORS = Object.freeze({

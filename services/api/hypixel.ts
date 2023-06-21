@@ -1,10 +1,10 @@
-import { Player, PlayerResponse } from "./types";
+import { Player, PlayerResponse } from "../types";
 import axios, { AxiosInstance } from "axios";
-import * as config from "../config.json";
-import logger from "../util/logging";
-import { COLORS } from "../assets/constants";
-import { ExpiringCache } from "../util/cache";
-import { FeedbackMessage } from "../messages/error";
+import * as config from "../../config.json";
+import logger from "../../util/logging";
+import { COLORS } from "../../assets/constants";
+import { ExpiringCache } from "../../util/cache";
+import { FeedbackMessage } from "../../messages/error";
 
 export type PlayerTag = "name" | "uuid" | "none";
 type Stats = "Bedwars";

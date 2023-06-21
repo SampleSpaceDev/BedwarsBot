@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from "axios";
-import { ExpiringCache } from "../util/cache";
+import { ExpiringCache } from "../../util/cache";
 import { PlayerTag } from "./hypixel";
 
 interface PlayerDbResponse {
