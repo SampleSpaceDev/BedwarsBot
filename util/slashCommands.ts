@@ -18,9 +18,17 @@ export async function registerCommands(api: ApplicationCommandsAPI): Promise<voi
 
         await import(filePath).then(async module => {
             const command = module.default.default;
-            if (!command) return; 
+            if (!command) return;
 
             if ('data' in command && 'execute' in command) {
+
+                if ('isDev' in command && command.isDev) {
+                    const devCommand = await api.createGuildCommand(config.appId, config.guildId, command.data);
+                    logger.info(`[COMMAND] Dev command "${command.data.name}" was registered.`);
+                    commands.set(devCommand.id, command);
+                    return;
+                }
+
                 const registeredCommand = await api.createGlobalCommand(config.appId, command.data);
                 commands.set(registeredCommand.id, command);
 

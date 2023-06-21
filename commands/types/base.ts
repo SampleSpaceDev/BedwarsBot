@@ -4,4 +4,5 @@ export class Command {
     data: RESTPostAPIApplicationCommandsJSONBody;
     execute: Function;
     autocomplete?: Function;
+    isDev?: boolean;
 }
