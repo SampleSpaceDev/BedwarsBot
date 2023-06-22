@@ -24,9 +24,8 @@ const rest = new REST({ version: '10' }).setToken(config.token);
 
 const gateway = new WebSocketManager({
     token: config.token,
-    intents: GatewayIntentBits.Guilds | GatewayIntentBits.MessageContent,
-    rest,
-    shardCount: 1
+    intents: GatewayIntentBits.Guilds,
+    rest
 });
 
 const client = new Client({ rest, gateway });
@@ -39,23 +38,6 @@ export const properties = JSON.parse(packageJson);
 
 client.once(GatewayDispatchEvents.Ready, async () => {
     logger.info("[CLIENT] Client online.");
-
-    const shards = await gateway.getShardIds();
-    for (let shard of shards) {
-        await client.updatePresence(shard, {
-            status: PresenceUpdateStatus.Online,
-            activities: [
-                {
-                    name: `Mango v${properties.version}`,
-                    type: ActivityType.Watching
-                }
-            ],
-            afk: false,
-            since: Date.now()
-        }).catch((error) => {
-            logger.error(error);
-        });
-    }
 
     const commit = extractCommitInfo();
     if (commit) {
