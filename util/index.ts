@@ -1,6 +1,7 @@
 import { mongo } from "../services";
 import { LinkedPlayer } from "../services/types";
 import { Duration, Moment } from "moment";
+import { CanvasWrapper } from "./canvas";
 
 export type RemoveMethods<T> = Pick<
   T,
@@ -19,7 +20,7 @@ export async function getPlayer(discordId: string): Promise<string> {
         id: discordId
     }).toArray();
 
-    return found[0].uuid || undefined;
+    return found[0]?.uuid || undefined;
 }
 
 export const randomId = () => Math.random().toString(16).substring(2, 9);
@@ -36,6 +37,20 @@ export const formatTime = (duration: Duration) => {
     }, '').trim();
 }
 
-export const formatDate = (moment: Moment) => moment.format('MMM Do YYYY, h:mm:ss a');
+export const formatDate = (moment: Moment, time: boolean = true) => time ? moment.format('MMM Do YYYY, h:mm:ss a') : moment.format('MMM Do YYYY');
 
 export const f = (number: number) => Math.round(number).toLocaleString();
+
+export const truncate = (wrapper: CanvasWrapper, text: string, maxLength: number) => {
+    const ellipsis = "...";
+    const maxTextWidth = maxLength - wrapper.measure(ellipsis);
+
+    const truncatedText = Array.from(text).reduce((result, char) => {
+        const charWidth = wrapper.measure(char);
+        const width = wrapper.measure(result);
+
+        return width + charWidth <= maxTextWidth ? result + char : result;
+    }, "");
+
+    return truncatedText + ellipsis;
+}
