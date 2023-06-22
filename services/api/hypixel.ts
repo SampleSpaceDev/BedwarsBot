@@ -90,7 +90,7 @@ export class HypixelApiService {
             case "MVP_PLUS":
                 return COLORS.AQUA;
             case "SUPERSTAR":
-                return player.monthlyRankColor === "GOLD" ? COLORS.GOLD : COLORS.AQUA;
+                return player.monthlyRankColor !== "AQUA" ? COLORS.GOLD : COLORS.AQUA;
             case "GAME_MASTER":
                 return COLORS.DARK_GREEN;
             case "YOUTUBER":
