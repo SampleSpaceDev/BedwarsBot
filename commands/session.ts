@@ -3,9 +3,9 @@ import { SlashCommandBuilder } from "@discordjs/builders";
 import { FeedbackMessage } from "../messages/error";
 import * as config from "../config.json";
 import { interactions } from "../index";
-import { hypixel, mongo } from "../services";
+import { hypixel, mojang, mongo } from "../services";
 import { Bedwars, BedwarsSession, Player, Session } from "../services/types";
-import {f, formatDate, formatTime, getPlayer, randomId, ratio, stripColor} from "../util";
+import { f, formatDate, formatTime, getPlayer, randomId, ratio, stripColor, truncate } from "../util";
 import {
     APIApplicationCommandAutocompleteInteraction,
     APIApplicationCommandInteractionDataStringOption
@@ -28,7 +28,21 @@ const command: Command = {
             .setDescription("Starts a new session, optionally with a name")
             .addStringOption(option => option
                 .setName("name")
+                .setMinLength(1)
+                .setMaxLength(32)
                 .setDescription("The name of the session")
+            )
+        )
+        .addSubcommand(command => command
+            .setName("end")
+            .setDescription("Ends a session")
+            .addStringOption(option => option
+                .setName("session")
+                .setDescription("The ID of the session you wish to end")
+                .setMinLength(1)
+                .setMaxLength(128)
+                .setRequired(true)
+                .setAutocomplete(true)
             )
         )
         .addSubcommand(command => command
@@ -37,12 +51,16 @@ const command: Command = {
             .addStringOption(option => option
                 .setName("session")
                 .setDescription("The ID of the session you wish to rename")
+                .setMinLength(1)
+                .setMaxLength(128)
                 .setRequired(true)
                 .setAutocomplete(true)
             )
             .addStringOption(option => option
                 .setName("name")
                 .setDescription("The new name of the session")
+                .setMinLength(1)
+                .setMaxLength(32)
                 .setRequired(true)
             )
         )
@@ -52,6 +70,8 @@ const command: Command = {
             .addStringOption(option => option
                 .setName("session")
                 .setDescription("The ID of the session you wish to delete")
+                .setMinLength(1)
+                .setMaxLength(128)
                 .setRequired(true)
                 .setAutocomplete(true)
             )
@@ -62,8 +82,20 @@ const command: Command = {
             .addStringOption(option => option
                 .setName("session")
                 .setDescription("The ID of the session you wish to view")
+                .setMinLength(1)
+                .setMaxLength(128)
                 .setRequired(true)
                 .setAutocomplete(true)
+            )
+        )
+        .addSubcommand(command => command
+            .setName("list")
+            .setDescription("List yours or another player's sessions")
+            .addStringOption(option => option
+                .setName("player")
+                .setMinLength(1)
+                .setMaxLength(36)
+                .setDescription("The username of the player whose sessions you wish to list")
             )
         )
         .toJSON(),
@@ -75,6 +107,14 @@ const command: Command = {
 
         const sessionName: Option = subcommand.options.find((option: Option) => option.name === "name");
         const sessionId: Option = subcommand.options.find((option: Option) => option.name === "session");
+        const username: Option = subcommand.options.find((option: Option) => option.name === "player");
+
+        if (sessionName && sessionName.value !== undefined && /^[a-zA-Z0-9\s]+$/.test(sessionName.value) === false) {
+            const error = FeedbackMessage.error("Invalid session name");
+            return interactions.followUp(config.appId, interaction.token, {
+                embeds: error.embeds.map((embed) => embed.toJSON())
+            });
+        }
 
         switch (subcommand.name) {
             case "start":
@@ -92,6 +132,9 @@ const command: Command = {
             case "view":
                 await Subcommands.view(interaction, sessionId.value);
                 return;
+            case "list":
+                await Subcommands.list(interaction, username?.value || undefined);
+                return;
             default:
                 const error = FeedbackMessage.error("Invalid subcommand");
                 return interactions.followUp(config.appId, interaction.token, {
@@ -107,14 +150,18 @@ const command: Command = {
             ownerId: player
         }).toArray();
 
+        const option = interaction.data.options.find((option: Option) => option.name === "session") as Option;
+
         await interactions.createAutocompleteResponse(interaction.id, interaction.token, {
             choices: playerSessions.map((session) => {
-                const date = new Date(session.started * 1000).toLocaleString();
+                const date = formatDate(moment(session.started * 1000), false);
                 return {
-                    name: session.name !== undefined ? `${session.name} (${date})` : date,
+                    name: session.name ? `${session.name} (${date})` : date,
                     value: session.id
                 }
             })
+            .filter((choice) => choice.name.toLowerCase().includes(option?.value || ""))
+            .slice(0, 24)
         });
     }
 }
@@ -165,7 +212,7 @@ async function buildImage(interaction, session: Session) {
     ctx.font = "20px Minecraft, Arial";
     wrapper.roundedRect(10, 60, ctx.canvas.width - 20, 55, COLORS.WHITE, 0.2);
 
-    wrapper.drawText(`<white>Session started:</white> <yellow>${formatDate(moment(session.started * 1000))}</yellow>`, 20, 80, true);
+    wrapper.drawText(`<white>Session Started:</white> <yellow>${formatDate(moment(session.started * 1000))}</yellow>`, 20, 80, true);
     wrapper.drawText(`<white>Games Played:</white> <green>${f(differences.overall.gamesPlayed)}</green>`, 20, 105, true);
 
     wrapper.roundedRect(10, 125, ctx.canvas.width - 20, 55, COLORS.WHITE, 0.2);
@@ -236,6 +283,7 @@ async function buildImage(interaction, session: Session) {
         });
     }
 
+    wrapper.font("20px Minecraft, Arial");
     await TITLES.Footer(ctx, 500 - 158 - 20, 190 + skinRender.height + 20, 158);
 
     return ctx.canvas;
@@ -309,6 +357,13 @@ class Subcommands {
     }
     public static end = async(interaction, sessionId: string) => {
         const uuid = await getPlayer(interaction.member.user.id);
+
+        if (!uuid) {
+            return interactions.followUp(config.appId, interaction.token, {
+                embeds: FeedbackMessage.error("You need to link your account first. Use </link:1119652679052972152>.").embeds.map((embed) => embed.toJSON())
+            });
+        }
+
         const sessions = await mongo.getCollection<Session>("sessions");
 
         const player = (await hypixel.getPlayer("uuid", uuid)).player as Player;
@@ -376,7 +431,8 @@ class Subcommands {
         const player = (await hypixel.getPlayer("uuid", uuid)).player as Player;
         const stats = player.stats.Bedwars as Bedwars;
 
-        const sessionId = randomId();
+        let sessionId = randomId();
+        while (await sessions.findOne({ id: sessionId })) sessionId = randomId();
 
         await sessions.insertOne({
             id: sessionId,
@@ -404,6 +460,94 @@ class Subcommands {
 
         return interactions.followUp(config.appId, interaction.token, {
             embeds: FeedbackMessage.success(`Created session \`${sessionName || sessionId}\`.`).embeds.map((embed) => embed.toJSON())
+        });
+    }
+    public static list = async(interaction, username?: string) => {
+        const uuid = username ? (await mojang.getPlayer(username)).data.player.id : await getPlayer(interaction.member.user.id);
+
+        if (!username && !uuid) {
+            return interactions.followUp(config.appId, interaction.token, {
+                embeds: FeedbackMessage.error("You need to link your account first. Use </link:1119652679052972152>.").embeds.map((embed) => embed.toJSON())
+            });
+        }
+
+        const collection = await mongo.getCollection<Session>("sessions");
+        const sessions = (await collection.find({
+            ownerId: uuid
+        }).toArray()).sort((a, b) => b.started - a.started);
+
+        if (sessions.length === 0) {
+            return interactions.followUp(config.appId, interaction.token, {
+                embeds: FeedbackMessage.error(`${username ? `\`${username}\` does` : `You do`} not have any sessions.`).embeds.map((embed) => embed.toJSON())
+            });
+        }
+
+        const player = (await hypixel.getPlayer("uuid", uuid)).player as Player;
+
+        const ctx = await defaultCanvas("Bedwars");
+        const wrapper = new CanvasWrapper(ctx);
+
+        await TITLES.Session(ctx, { name: player.displayname, rankColor: hypixel.getRankColor(player) }, true);
+
+        wrapper.font("20px Minecraft");
+
+        wrapper.drawText(`<white>Name</white>`, 10 + ((180 / 2) - (wrapper.measure("Name") / 2)), 80, true);
+        wrapper.drawText(`<white>ID</white>`, 200 + ((100 / 2) - (wrapper.measure("ID") / 2)), 80, true);
+        wrapper.drawText(`<white>Started</white>`, 310 + ((180 / 2) - (wrapper.measure("Started") / 2)), 80, true);
+
+        const maxSessions = 9;
+
+        let y = 90;
+        for (let session of sessions.slice(0, maxSessions - 1)) {
+            const sessionName = session.name || "Unnamed";
+
+            const measuredWidth = wrapper.measure(sessionName + (session.isEnded ? " ⏹️" : ""));
+            // If the width exceeds the maximum, truncate and append "..."
+            const clampedName = measuredWidth > 170
+                ? truncate(wrapper, sessionName, 160 - (session.isEnded ? wrapper.measure(" ⏹️") : 0))
+                : sessionName;
+            const color = session.name ? "yellow" : "gray";
+
+            wrapper.roundedRect(10, y, 180, 30, COLORS.WHITE, 0.2);
+            wrapper.drawText(`<${color}>${clampedName}</${color}>${session.isEnded ? `<red> ⏹️</red>` : ``}`,
+                20 + (160 / 2) - (wrapper.measure(clampedName + (session.isEnded ? " ⏹️" : "")) / 2),
+                y + 20,
+                true);
+
+            wrapper.font("16px Minecraft");
+            wrapper.roundedRect(200, y, 90, 30, COLORS.WHITE, 0.2);
+            wrapper.drawText(`<white>${session.id}</white>`, 210 + (70 / 2) - (wrapper.measure(session.id) / 2), y + 20, true);
+            wrapper.font("20px Minecraft");
+
+            wrapper.roundedRect(300, y, 190, 30, COLORS.WHITE, 0.2);
+            const date = formatDate(moment(session.started * 1000), false);
+            wrapper.drawText(`<yellow>${date}</yellow>`, 310 + (170 / 2) - (wrapper.measure(date) / 2), y + 20, true);
+
+            y += 40;
+        }
+
+        for (let i = 1; i < maxSessions - sessions.length; i++) {
+            wrapper.roundedRect(10, y, 180, 30, COLORS.WHITE, 0.1);
+            wrapper.roundedRect(200, y, 90, 30, COLORS.WHITE, 0.1);
+            wrapper.roundedRect(300, y, 190, 30, COLORS.WHITE, 0.1);
+            y += 40;
+        }
+
+        wrapper.font("16px Minecraft");
+        wrapper.roundedRect(10, 415, 480, 30, COLORS.WHITE, 0.2);
+        const tipText = `<white>Use</white> <aqua>/session view</aqua> <white>followed by an ID to view that session!</white>`;
+        wrapper.drawText(tipText, 20 + ((460 / 2) - (wrapper.measure(stripColor(tipText)) / 2)), 500 - 65, true);
+        wrapper.font("20px Minecraft");
+
+        wrapper.roundedRect(10, 460, 480, 30, COLORS.WHITE, 0.2);
+        await TITLES.Footer(ctx, 10, 500 - 32, 480);
+
+        await interactions.followUp(config.appId, interaction.token, {
+            content: `<:info:1119591149611528242> Click here: </session view:1119607952316301343> to pre-fill the view command.`,
+            files: [{
+                name: "stats.png",
+                data: await ctx.canvas.toBuffer("png")
+            }]
         });
     }
 }
