@@ -23,7 +23,7 @@ export class HypixelApiService {
             }
         });
 
-        this.cache = new ExpiringCache<PlayerResponse>(30 * 60 * 1000);
+        this.cache = new ExpiringCache<PlayerResponse>(10 * 60 * 1000);
     }
 
     public async getPlayer(type: PlayerTag, tag: string): Promise<PlayerResponse> {
