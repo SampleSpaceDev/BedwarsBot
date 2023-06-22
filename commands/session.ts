@@ -232,8 +232,7 @@ async function buildImage(interaction, session: Session) {
     if (skinRender instanceof FeedbackMessage) {
         return interactions.followUp(config.appId, interaction.token, {
             embeds: skinRender.embeds.map(embed => embed.toJSON()),
-            content: skinRender.content,
-            files: skinRender.files
+            content: skinRender.content
         });
     }
 
