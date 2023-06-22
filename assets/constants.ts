@@ -66,8 +66,8 @@ export const TITLES = Object.freeze({
     Stats: function(ctx: CanvasRenderingContext2D, player: { name: string, rankColor: string } ) {
         drawTitleText(ctx, `<${player.rankColor}>${player.name}<\\${player.rankColor}><gray>'s</gray> <red>Bed<\red><white>Wars Stats</white>`);
     },
-    Session: function(ctx: CanvasRenderingContext2D, player: { name: string, rankColor: string } ) {
-        drawTitleText(ctx, `<${player.rankColor}>${player.name}<\\${player.rankColor}><gray>'s</gray> <red>Bed<\red><white>Wars Session</white>`);
+    Session: function(ctx: CanvasRenderingContext2D, player: { name: string, rankColor: string }, isList?: boolean ) {
+        drawTitleText(ctx, `<${player.rankColor}>${player.name}<\\${player.rankColor}><gray>'s</gray> <red>Bed<\red><white>Wars Session${isList ? "s" : ""}</white>`);
     },
     Footer: async function(ctx: CanvasRenderingContext2D, x: number, y: number, width: number) {
         const wrapper = new CanvasWrapper(ctx);
