@@ -14,6 +14,8 @@ const command: Command = {
         .addStringOption(option => option
             .setName("player")
             .setDescription("The username or UUID of the player you wish to link to.")
+            .setMinLength(1)
+            .setMaxLength(36)
             .setRequired(true)
         )
         .toJSON(),
@@ -28,6 +30,16 @@ const command: Command = {
         if (!profile.success) {
             return interactions.followUp(config.appId, interaction.token, {
                 embeds: missingPlayer(mojang.parseTag(tag), tag).embeds.map((embed) => embed.toJSON())
+            });
+        }
+
+        const collection = await mongo.getCollection<LinkedPlayer>("players");
+        const existing = await collection.findOne({ id: interaction.member.user.id });
+
+        if (existing) {
+            const body = FeedbackMessage.error(`You are already linked.`);
+            return interactions.followUp(config.appId, interaction.token, {
+                embeds: body.embeds.map((embed) => embed.toJSON())
             });
         }
 
@@ -50,7 +62,7 @@ const command: Command = {
             });
         }
 
-        const collection = await mongo.getCollection<LinkedPlayer>("players");
+
         await collection.insertOne({
             id: interaction.member.user.id,
             uuid: profile.data.player.id
