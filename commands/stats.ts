@@ -18,6 +18,8 @@ const command: Command = {
         .addStringOption(option => option
             .setName("player")
             .setDescription("The username or UUID of a player.")
+            .setMinLength(1)
+            .setMaxLength(36)
         )
         .toJSON(),
     execute: async (interaction) => {
