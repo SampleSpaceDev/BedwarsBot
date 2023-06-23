@@ -1,7 +1,6 @@
 import { Command } from "./types/base";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { polsu } from "../services";
-import { PolsuResponse, Status } from "../services/types/polsu";
 import { FeedbackMessage } from "../messages/error";
 import { interactions } from "../index";
 import * as config from "../config.json";
@@ -39,7 +38,7 @@ const command: Command = {
 
 class Subcommands {
     public static status = async (interaction) => {
-        const status = ((await polsu.getStatus()) as PolsuResponse).data as Status;
+        const status = await polsu.getStatus();
 
         if (!status) {
             const error = FeedbackMessage.error("Failed to get status");
@@ -47,11 +46,7 @@ class Subcommands {
                 embeds: error.embeds.map((embed) => embed.toJSON())
             });
         }
-
-        const maps = status.rotation.maps;
-        const rotation = maps.solos_doubles.concat(maps.threes_fours).concat(maps.notInDataBase);
-
-        console.log(rotation);
+        await polsu.getRotation();
 
         const embed = FeedbackMessage.success(`Rotation at <t:${status.rotation.lastRotation}:D> logged.`);
 

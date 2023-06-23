@@ -62,12 +62,22 @@ export const ITEMS = Object.freeze({
     PAPER: "assets/minecraft/textures/item/paper.png",
 });
 
+export const FESTIVALS = Object.freeze({
+    EASTER: "green",
+    SUMMER: "yellow",
+    HALLOWEEN: "gold",
+    WINTER: "red"
+});
+
 export const TITLES = Object.freeze({
     Stats: function(ctx: CanvasRenderingContext2D, player: { name: string, rankColor: string } ) {
         drawTitleText(ctx, `<${player.rankColor}>${player.name}<\\${player.rankColor}><gray>'s</gray> <red>Bed<\red><white>Wars Stats</white>`);
     },
-    Session: function(ctx: CanvasRenderingContext2D, player: { name: string, rankColor: string }, isList?: boolean ) {
+    Session: function(ctx: CanvasRenderingContext2D, player: { name: string, rankColor: string }, isList?: boolean) {
         drawTitleText(ctx, `<${player.rankColor}>${player.name}<\\${player.rankColor}><gray>'s</gray> <red>Bed<\red><white>Wars Session${isList ? "s" : ""}</white>`);
+    },
+    Rotation: function(ctx: CanvasRenderingContext2D) {
+        drawTitleText(ctx, `<white>Current</white> <red>Bed<\red><white>Wars</white> <white>Rotation</white>`);
     },
     Footer: async function(ctx: CanvasRenderingContext2D, x: number, y: number, width: number) {
         const wrapper = new CanvasWrapper(ctx);
