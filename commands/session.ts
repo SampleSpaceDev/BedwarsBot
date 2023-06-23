@@ -489,7 +489,7 @@ class Subcommands {
 
         await TITLES.Session(ctx, { name: player.displayname, rankColor: hypixel.getRankColor(player) }, true);
 
-        wrapper.font("20px Minecraft");
+        wrapper.font("20px Minecraft, Arial");
 
         wrapper.drawText(`<white>Name</white>`, 10 + ((180 / 2) - (wrapper.measure("Name") / 2)), 80, true);
         wrapper.drawText(`<white>ID</white>`, 200 + ((100 / 2) - (wrapper.measure("ID") / 2)), 80, true);
