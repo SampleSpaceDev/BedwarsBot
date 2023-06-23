@@ -1,0 +1,446 @@
+{
+    "Acropolis": {
+        "teams": 8,
+        "pool": "SLOW"
+    },
+    "Airshow": {
+        "teams": 8,
+        "pool": "FAST"
+    },
+    "Amazon": {
+        "teams": 8,
+        "pool": "SLOW"
+    },
+    "Apollo": {
+        "teams": 8,
+        "pool": "FAST"
+    },
+    "Aqil": {
+        "teams": 8,
+        "pool": "FAST"
+    },
+    "Aquarium": {
+        "teams": 4,
+        "pool": "FAST"
+    },
+    "Archway": {
+        "teams": 4,
+        "pool": "SLOW"
+    },
+    "Artemis": {
+        "teams": 4,
+        "pool": "FAST"
+    },
+    "Ashfire": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Ashore": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Babylon": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Bio-Hazard": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Blitzen": {
+        "teams": 69,
+        "pool": ""
+    },
+    "Blossom": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Boletum": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Build Site": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Carapace": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Cascade": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Casita": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Castle": {
+        "teams": 69,
+        "pool": ""
+    },
+    "Catalyst": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Chained": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Cliffside": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Comet": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Crogorm": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Crypt": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Cryptic": {
+        "teams": 69,
+        "pool": ""
+    },
+    "Daolong": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Deadwood": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Deposit": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Dockyard": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Dragonstar": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Dreamgrove": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Eastwood": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Enchanted": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Extinction": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Fang Outpost": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Fireplace": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Fort Doon": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Frogiton": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Frost": {
+        "teams": 69,
+        "pool": ""
+    },
+    "Frosted": {
+        "teams": 69,
+        "pool": ""
+    },
+    "Gardens": {
+        "teams": 69,
+        "pool": ""
+    },
+    "Gateway": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Gelato": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Gingerbread": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Glacier": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Graveship": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Harvest": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Hollow": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Holmgang": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Horizon": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Invasion": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Ironclad": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Jurassic": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Katsu": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Kubo": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Lectus": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Lighthouse": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Lightstone": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Lions Temple": {
+        "teams": 69,
+        "pool": ""
+    },
+    "Loft": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Lotice": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Lotus": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Lucky Rush": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Meso": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Mirage": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Obelisk": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Orbit": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Orchestra": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Paladin": {
+        "teams": 69,
+        "pool": ""
+    },
+    "Paradox": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Pavilion": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Pernicious": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Pharaoh": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Picnic": {
+        "teams": 69,
+        "pool": ""
+    },
+    "Planet 98": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Playground": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Polygon": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Pool Party": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Relic": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Rise": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Rooftop": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Rooted": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Ruins": {
+        "teams": 69,
+        "pool": ""
+    },
+    "Sandcastle": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Santa's Rush": {
+        "teams": 69,
+        "pool": ""
+    },
+    "Scorched Sands": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Serenity": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Siege": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Sky Festival": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Sky Rise": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Snowkeep": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Solace": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Speedway": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Steampunk": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Stilted": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Stonekeep": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Swashbuckle": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Temple": {
+        "teams": 69,
+        "pool": ""
+    },
+    "Terminal": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Tigris": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Toro": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Treenan": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Tuzi": {
+        "teams": 69,
+        "pool": ""
+    },
+    "Unturned": {
+        "teams": 4,
+        "pool": ""
+    },
+    "Usagi": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Waterfall": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Yue": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Zarzul": {
+        "teams": 8,
+        "pool": ""
+    },
+    "Zen Plaza": {
+        "teams": 69,
+        "pool": ""
+    }
+}
