@@ -16,6 +16,7 @@ export class Player {
     newPackageRank: string;
     packageRank: string;
     monthlyRankColor: string;
+    rankPlusColor: string;
 
     socialMedia?: SocialMedia;
 }
