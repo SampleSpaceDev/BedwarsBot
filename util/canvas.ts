@@ -124,7 +124,7 @@ export class CanvasWrapper {
     }
 
     async drawPlayer(id: string, x: number, y: number, options: {
-        type: "head" | "body" | "full";
+        type: "head" | "body" | "full" | "bust";
         rotation?: number;
         yaw?: number;
         pitch?: number;
