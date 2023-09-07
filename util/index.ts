@@ -54,3 +54,21 @@ export const truncate = (wrapper: CanvasWrapper, text: string, maxLength: number
 
     return truncatedText + ellipsis;
 }
+
+export function formatStat(input: string): string {
+    const exceptions = ["wlr", "kdr", "fkdr", "bblr"];
+
+    // Check for exceptions
+    if (exceptions.includes(input)) {
+        return input.toUpperCase();
+    }
+
+    return input
+        .replace(/([a-z])([A-Z])/g, '$1 $2') // Insert space between lowercase and uppercase letters
+        .replace(/[_-]/g, ' ') // Replace underscores and dashes with spaces
+        .trim() // Remove leading/trailing spaces
+        .split(' ') // Split into individual words
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize first letter of each word
+        .join(' '); // Join words back into a single string
+}
+
