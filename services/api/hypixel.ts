@@ -101,22 +101,84 @@ export class HypixelApiService {
         }
     }
 
+    public getDisplayName(player: Player): string {
+        if (player.prefix) {
+            return `${this.prefixToDisplay(player.prefix)} ${player.displayname}`;
+        }
+
+        const plusColor = player.rankPlusColor ? player.rankPlusColor.toLowerCase() : "red";
+        const superstarColor = player.monthlyRankColor !== "AQUA" ? `gold` : `aqua`;
+
+        switch (this.getRank(player)) {
+            case "VIP":
+                return `<green>[VIP] ${player.displayname}</green>`;
+            case "VIP_PLUS":
+                return `<green>[VIP</green><gold>+</gold><green>] ${player.displayname}</green>`;
+            case "MVP":
+                return `<aqua>[MVP] ${player.displayname}</aqua>`;
+            case "MVP_PLUS":
+                return `<aqua>[MVP</aqua><${plusColor}>+</${plusColor}><aqua>] ${player.displayname}</aqua>`;
+            case "SUPERSTAR":
+                return `<${superstarColor}>[MVP</${superstarColor}><${plusColor}>++</${plusColor}><${superstarColor}>] ${player.displayname}</${superstarColor}>`;
+            case "GAME_MASTER":
+                return `<dark_green>[GM] ${player.displayname}</dark_green>`;
+            case "YOUTUBER":
+                return `<red>[</red><white>YOUTUBE</white><red>] ${player.displayname}</red>`;
+            case "ADMIN":
+                return `<red>[ADMIN] ${player.displayname}</red>`;
+            default:
+                return `<gray>${player.displayname}</gray>`;
+        }
+    }
+
+    public prefixToDisplay(prefix: string): string {
+        let result = "";
+        let insideCode = false;
+        let colorCode = "";
+
+        for (let i = 0; i < prefix.length; i++) {
+            const char = prefix[i];
+            const nextChar = prefix[i + 1];
+            const nextColorCode = `§${nextChar}`;
+
+            if (insideCode && nextColorCode in this.codesToColor) {
+                result += `</${this.codesToColor[colorCode]}>`;
+                insideCode = false;
+            }
+
+            if (char === "§" && nextColorCode in this.codesToColor) {
+                colorCode = nextColorCode;
+                result += `<${this.codesToColor[colorCode]}>`;
+                insideCode = true;
+                i++; // Skip the color code character
+            } else {
+                result += char;
+            }
+        }
+
+        if (insideCode) {
+            result += `</${this.codesToColor[colorCode]}>`;
+        }
+
+        return result;
+    }
+
     private codesToColor: { [key: string]: string } = {
-        "§0": COLORS.BLACK,
-        "§1": COLORS.DARK_BLUE,
-        "§2": COLORS.DARK_GREEN,
-        "§3": COLORS.DARK_AQUA,
-        "§4": COLORS.DARK_RED,
-        "§5": COLORS.DARK_PURPLE,
-        "§6": COLORS.GOLD,
-        "§7": COLORS.GRAY,
-        "§8": COLORS.DARK_GRAY,
-        "§9": COLORS.BLUE,
-        "§a": COLORS.GREEN,
-        "§b": COLORS.AQUA,
-        "§c": COLORS.RED,
-        "§d": COLORS.LIGHT_PURPLE,
-        "§e": COLORS.YELLOW,
-        "§f": COLORS.WHITE,
+        "§0": `black`,
+        "§1": `dark_blue`,
+        "§2": `dark_green`,
+        "§3": `dark_aqua`,
+        "§4": `dark_red`,
+        "§5": `dark_purple`,
+        "§6": `gold`,
+        "§7": `gray`,
+        "§8": `dark_gray`,
+        "§9": `blue`,
+        "§a": `green`,
+        "§b": `aqua`,
+        "§c": `red`,
+        "§d": `light_purple`,
+        "§e": `yellow`,
+        "§f": `white`,
     }
 }
