@@ -79,6 +79,9 @@ export const TITLES = Object.freeze({
     Rotation: function(ctx: CanvasRenderingContext2D) {
         drawTitleText(ctx, `<white>Current</white> <red>Bed<\red><white>Wars</white> <white>Rotation</white>`);
     },
+    Compare: function(ctx: CanvasRenderingContext2D) {
+        drawTitleText(ctx, `<red>Bed<\red><white>Wars Stats Comparison</white>`);
+    },
     Footer: async function(ctx: CanvasRenderingContext2D, x: number, y: number, width: number) {
         const wrapper = new CanvasWrapper(ctx);
 
