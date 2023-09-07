@@ -3,7 +3,7 @@ import {SlashCommandBuilder} from "@discordjs/builders";
 import {interactions} from "../index";
 import {hypixel, mojang} from "../services";
 import {FeedbackMessage} from "../messages/error";
-import {Bedwars, Player} from "../services/types";
+import {Player} from "../services/types";
 import {defaultCanvas} from "../assets";
 import {CanvasWrapper} from "../util/canvas";
 import {COLORS, TITLES} from "../assets/constants";
