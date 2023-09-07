@@ -135,7 +135,7 @@ export class PolsuApiService {
     }
 
     private async getFilteredRotation(playstyle: string) {
-        const response = await this.polsuBeta.get("/maps/data", {
+        const response = await this.polsu.get("/maps/data", {
             params: {
                 key: config.polsuKey,
                 playstyle
