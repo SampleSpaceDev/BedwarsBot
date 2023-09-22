@@ -53,7 +53,7 @@ export class CanvasWrapper {
         }
     }
 
-    public drawText(text: string, x: number, y: number, shadow: boolean) {
+    public drawText(text: string, x: number, y: number, shadow: boolean, maxWidth?: number) {
         const styleStack: TextStyle[] = [];
         let currentStyle: TextStyle = { color: COLORS.WHITE };
 
@@ -121,6 +121,21 @@ export class CanvasWrapper {
         if (remainingText) {
             processText(remainingText);
         }
+    }
+
+    private fontSize = () : number => this.ctx.font.match(/\d+/) ? parseInt(this.ctx.font.match(/\d+/)![0]) : 20;
+
+    public calculateSize(text: string, maxWidth: number) : number {
+        let currentFontSize = this.fontSize();
+
+        let width = this.measure(text);
+        while (width > maxWidth) {
+            currentFontSize -= 2;
+            this.font(`${currentFontSize}px Minecraft`);
+            width = this.measure(text);
+        }
+
+        return currentFontSize;
     }
 
     async drawPlayer(id: string, x: number, y: number, options: {
