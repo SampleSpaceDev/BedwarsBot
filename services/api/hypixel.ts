@@ -15,7 +15,7 @@ export class HypixelApiService {
 
     public constructor() {
         this.hypixel = axios.create({
-            baseURL: "https://api.hypixel.net/player",
+            baseURL: "https://api.hypixel.net",
             timeout: 10_000,
             headers: {
                 "Content-Type": "application/json",
@@ -31,7 +31,7 @@ export class HypixelApiService {
             return this.cache.get(tag);
         }
 
-        const player = await this.hypixel.get<PlayerResponse>(``, {
+        const player = await this.hypixel.get<PlayerResponse>("/player", {
             params: {
                 [type]: tag
             }
