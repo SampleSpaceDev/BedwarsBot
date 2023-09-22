@@ -80,7 +80,10 @@ export const TITLES = Object.freeze({
         drawTitleText(ctx, `<white>Current</white> <red>Bed<\red><white>Wars</white> <white>Rotation</white>`);
     },
     Compare: function(ctx: CanvasRenderingContext2D) {
-        drawTitleText(ctx, `<red>Bed<\red><white>Wars Stats Comparison</white>`);
+        drawTitleText(ctx, `<red>Bed</red><white>Wars Stats Comparison</white>`);
+    },
+    Ratios: function (ctx: CanvasRenderingContext2D, player: { name: string, rankColor: string }) {
+        drawTitleText(ctx, `<${player.rankColor}>${player.name}<\\${player.rankColor}><gray>'s</gray> <red>Bed</red><white>Wars Ratios</white>`);
     },
     Footer: async function(ctx: CanvasRenderingContext2D, x: number, y: number, width: number) {
         const wrapper = new CanvasWrapper(ctx);
