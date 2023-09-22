@@ -42,7 +42,7 @@ const command: Command = {
         }
 
         const profile = (await mojang.getPlayer(tag));
-        if (!profile.success) {
+        if (!profile || !profile.success) {
             return interactions.followUp(config.appId, interaction.token, {
                 embeds: missingPlayer(mojang.parseTag(tag), tag).embeds.map((embed) => embed.toJSON())
             });

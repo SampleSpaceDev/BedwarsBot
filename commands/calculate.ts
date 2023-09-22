@@ -1,7 +1,7 @@
 import {Command} from "./types/base";
 import {SlashCommandBuilder} from "@discordjs/builders";
 import {interactions} from "../index";
-import {defaultCanvas, defaultCanvasWithSize} from "../assets";
+import {defaultCanvasWithSize} from "../assets";
 import {CanvasWrapper} from "../util/canvas";
 import {COLORS, missingPlayer, TITLES} from "../assets/constants";
 import * as config from "../config.json";
@@ -52,7 +52,7 @@ const command: Command = {
 
 
         const profile = (await mojang.getPlayer(tag));
-        if (!profile.success) {
+        if (!profile || !profile.success) {
             return interactions.followUp(config.appId, interaction.token, {
                 embeds: missingPlayer(mojang.parseTag(tag), tag).embeds.map((embed) => embed.toJSON())
             });
