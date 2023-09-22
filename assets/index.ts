@@ -35,8 +35,8 @@ export async function urlToBuffer(imageUrl: string) : Promise<Buffer | FeedbackM
     }
 }
 
-export async function defaultCanvas(game: Game): Promise<CanvasRenderingContext2D> {
-    const canvas = new Canvas(500, 500);
+export async function defaultCanvasWithSize(game: Game, width: number, height: number): Promise<CanvasRenderingContext2D> {
+    const canvas = new Canvas(width, height);
     const ctx = canvas.getContext("2d");
 
     const backgroundImage = await randomBackground(game);
@@ -45,6 +45,10 @@ export async function defaultCanvas(game: Game): Promise<CanvasRenderingContext2
     ctx.filter = 'blur(0px) brightness(100%)';
 
     return ctx;
+}
+
+export async function defaultCanvas(game: Game): Promise<CanvasRenderingContext2D> {
+    return await defaultCanvasWithSize(game, 500, 500);
 }
 
 export function drawTitleText(ctx: CanvasRenderingContext2D, title: string) {
