@@ -109,7 +109,7 @@ const command: Command = {
         const sessionId: Option = subcommand.options.find((option: Option) => option.name === "session");
         const username: Option = subcommand.options.find((option: Option) => option.name === "player");
 
-        if (sessionName && sessionName.value !== undefined && /^[a-zA-Z0-9\s]+$/.test(sessionName.value) === false) {
+        if (sessionName && sessionName.value !== undefined && /^[a-zA-Z0-9\s-]+$/.test(sessionName.value) === false) {
             const error = FeedbackMessage.error("Invalid session name");
             return interactions.followUp(config.appId, interaction.token, {
                 embeds: error.embeds.map((embed) => embed.toJSON())
