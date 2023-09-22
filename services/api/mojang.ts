@@ -31,7 +31,7 @@ export class MojangApiService {
     }
 
     public async getPlayer(tag: string) {
-        if (tag.match(/^[a-zA-Z0-9_]{1,16}$/) === null) {
+        if (tag.match(/^[a-zA-Z0-9_]{1,16}$/) === null && tag.match(/^[a-f0-9]{32}$/) === null) {
             return;
         }
 
