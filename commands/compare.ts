@@ -124,7 +124,6 @@ const command: Command = {
             }
         }
 
-
         wrapper.font("20px Minecraft");
         wrapper.roundedRect(10, 460, 480, 30, COLORS.WHITE, 0.2);
         await TITLES.Footer(ctx, 10, 500 - 32, 480);
