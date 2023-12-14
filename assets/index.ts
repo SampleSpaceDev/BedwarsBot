@@ -6,6 +6,7 @@ import { COLORS, unknownError } from "./constants";
 import { FeedbackMessage } from "../messages/error";
 import { CanvasWrapper } from "../util/canvas";
 import { stripColor } from "../util";
+import { properties } from "../index";
 
 type Game = "Bedwars";
 
@@ -25,6 +26,9 @@ export async function urlToBuffer(imageUrl: string) : Promise<Buffer | FeedbackM
     try {
         const response = await axios.get(imageUrl, {
             responseType: 'arraybuffer',
+            headers: {
+                'User-Agent': `Mango/v${properties.version}`
+            },
             timeout: 10_000
         });
 
