@@ -1,8 +1,7 @@
+use crate::types::text_renderer::TextRenderer;
 use once_cell::sync::Lazy;
-use skia_safe::utils::text_utils::draw_text;
-use skia_safe::utils::text_utils::Align::Left;
-use skia_safe::{surfaces, Color, Data, EncodedImageFormat, Font, FontMgr, FontStyle, Paint, PaintStyle, Path, Point, Surface, Typeface};
-use std::mem;
+use skia_safe::{surfaces, Color, Data, EncodedImageFormat, FontMgr, FontStyle, Image, Paint, PaintStyle, Path, Point, Surface, Typeface};
+use std::{fs, mem};
 
 pub struct Canvas {
     surface: Surface,
@@ -25,6 +24,7 @@ impl Canvas {
         paint.set_anti_alias(true);
         paint.set_stroke_width(1.0);
         surface.canvas().clear(Color::WHITE);
+        
         Canvas {
             surface,
             path,
@@ -86,7 +86,7 @@ impl Canvas {
         self.surface.canvas().draw_path(&self.path, &self.paint);
         let _ = mem::replace(&mut self.path, new_path);
     }
-
+    
     #[inline]
     pub fn draw_rect(&mut self, x: f32, y: f32, width: f32, height: f32) {
         let rect = skia_safe::Rect::new(x, y, x + width, y + height);
@@ -103,11 +103,22 @@ impl Canvas {
         let oval = skia_safe::Rect::new(x, y, x + width, y + height);
         self.surface.canvas().draw_oval(oval, &self.paint);
     }
-
+    
     #[inline]
-    pub fn draw_text(&mut self, text: &str, x: f32, y: f32, size: f32) {
-        let paint = &self.paint;
-        draw_text(self.surface.canvas(), text, Point::new(x, y), &Font::new((*MINECRAFT_TYPEFACE).clone(), size), &paint, Left);
+    pub fn draw_text(&mut self, text: &str, x: f32, y: f32, size: f32, shadow: bool) {
+        let canvas = self.surface.canvas();
+        let mut renderer = TextRenderer::new(canvas);
+        
+        renderer.draw_text(text, x, y, size, shadow);
+    }
+    
+    #[inline]
+    pub fn draw_image(&mut self, path: &str, x: f32, y: f32, width: f32, height: f32) {
+        let img_bytes = fs::read(&path).expect("Failed to load image.");
+        let image = Image::from_encoded(Data::new_copy(&img_bytes)).expect("Failed to decode image.");
+        
+        let position = Point::new(x, y);
+        self.canvas().draw_image(&image, position, None);
     }
 
     #[inline]

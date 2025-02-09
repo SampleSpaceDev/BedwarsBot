@@ -75,6 +75,72 @@ pub struct HypixelResponse {
 pub struct HypixelPlayer {
     pub displayname: String,
     
+    pub prefix: Option<String>,
+    pub rank: Option<String>,
+    #[serde(rename = "packageRank")]
+    pub package_rank: Option<String>,
+    #[serde(rename = "newPackageRank")]
+    pub new_package_rank: Option<String>,
+    #[serde(rename = "monthlyPackageRank")]
+    pub monthly_package_rank: Option<String>,
+    
+    #[serde(rename = "rankPlusColor")]
+    pub rank_plus_color: Option<String>,
+    #[serde(rename = "monthlyRankColor")]
+    pub monthly_rank_color: Option<String>,
+    
     pub stats: HypixelStats,
+}
+
+impl HypixelPlayer {
+    pub fn calculate_rank(&self) -> String {
+        if let Some(ref prefix) = self.prefix {
+            return prefix.clone();
+        }
+        
+        if let Some(ref rank) = self.rank {
+            return rank.clone();
+        }
+
+        if let Some(ref monthly_package_rank) = self.monthly_package_rank {
+            return monthly_package_rank.clone();
+        }
+        
+        if let Some(ref new_package_rank) = self.new_package_rank {
+            return new_package_rank.clone();
+        }
+        
+        if let Some(ref package_rank) = self.package_rank {
+            return package_rank.clone();
+        }
+        
+        "".to_string()
+    }
+    
+    pub fn rank_formatted(&self) -> String {
+        let rank = &self.calculate_rank();
+
+        if let Some(ref prefix) = &self.prefix {
+            todo!("Implement prefix conversion");
+        }
+
+        let rank_color: String = self.monthly_rank_color.clone().unwrap();
+        let plus_color: String = self.rank_plus_color.clone().unwrap();
+        
+        let superstar = format!("<{0}>[MVP<{1}>++</{1}>]", rank_color, plus_color);
+        let mvp_plus = format!("<aqua>[MVP<{0}>+</{0}>]", rank_color);
+        
+        match rank.as_str() {
+            "ADMIN" => "<red>[ADMIN]",
+            "GAME_MASTER" => "<dark_green>[GM]",
+            "YOUTUBER" => "<red>[<white>YOUTUBE</white>]",
+            "SUPERSTAR" => superstar.as_str(),
+            "MVP_PLUS" => mvp_plus.as_str(),
+            "MVP" => "<aqua>[MVP]",
+            "VIP_PLUS" => "<green>[VIP<gold>+</gold>]",
+            "VIP" => "<green>[VIP]",
+            _ => "",
+        }.to_string()
+    } 
 }
 
