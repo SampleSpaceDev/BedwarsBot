@@ -1,12 +1,9 @@
-use crate::types::ui::content_box::{Alignment, ContentBox, VerticalAlignment};
+use crate::types::ui::content_box::ContentBox;
 use crate::types::ui::text_renderer::TextRenderer;
-use image::{DynamicImage, ImageFormat};
 use once_cell::sync::Lazy;
 use skia_safe::{surfaces, Color, Data, EncodedImageFormat, FontMgr, Image, Paint, PaintStyle, Path, Point, Surface, Typeface};
-use std::io::Cursor;
 use std::ops::Deref;
-use std::{env, fs, mem};
-use tracing::info;
+use std::{fs, mem};
 
 pub struct Canvas {
     pub surface: Surface,

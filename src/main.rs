@@ -11,7 +11,7 @@ use regex::Regex;
 use serenity::all::{ClientBuilder, GuildId, Ready};
 use serenity::async_trait;
 use serenity::client::EventHandler;
-use tracing::{info, Level};
+use tracing::{info};
 use crate::commands::stats;
 
 struct Data {}

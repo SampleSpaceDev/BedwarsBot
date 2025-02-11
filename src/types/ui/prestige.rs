@@ -1,12 +1,12 @@
 use std::cmp::min;
 
-struct Prestige {
+pub struct Prestige {
     pub name: &'static str,
     pub color_pattern: &'static str,
     pub symbol: PrestigeSymbol,
 }
 
-enum PrestigeSymbol {
+pub enum PrestigeSymbol {
     First,
     Second,
     Third,

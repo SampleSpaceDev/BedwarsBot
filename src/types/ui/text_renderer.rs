@@ -1,10 +1,9 @@
-use std::ptr::eq;
-use skia_safe::{Canvas, Color, Color4f, Font, Paint, Rect, Typeface};
-use skia_safe::wrapper::PointerWrapper;
 use crate::types::ui::canvas::{BACKUP_TYPEFACE, MINECRAFT_TYPEFACE};
 use crate::types::ui::colors::colors;
 use crate::types::ui::colors::colors::{exists, COLORS};
 use crate::types::ui::colors::shadows::SHADOWS;
+use skia_safe::{Canvas, Color, Color4f, Font, Paint, Typeface};
+use std::ptr::eq;
 
 #[derive(Debug)]
 enum Node {
@@ -141,7 +140,7 @@ impl<'a> TextRenderer<'a> {
         Self { canvas }
     }
     
-    pub fn draw_text(&mut self, input: &str, mut x: f32, y: f32, mut text_size: f32, shadow: bool) {
+    pub fn draw_text(&mut self, input: &str, mut x: f32, y: f32, text_size: f32, shadow: bool) {
         let runs = extract_text_runs(input);
         
         let mut paint = Paint::new(Color4f::new(0.0, 0.0, 0.0, 1.0), None);

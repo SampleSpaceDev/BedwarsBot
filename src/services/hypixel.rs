@@ -7,8 +7,7 @@ use std::sync::{Arc, Once};
 use std::time::Duration;
 use skia_safe::Color;
 use tracing::debug;
-use tracing::field::debug;
-use crate::types::ui::colors::rank_colors::{get_rank_color, RANK_COLORS};
+use crate::types::ui::colors::rank_colors::{get_rank_color};
 use crate::types::hypixel::achievements::HypixelAchievements;
 
 pub struct HypixelService {
@@ -161,10 +160,6 @@ impl HypixelPlayer {
             Some(color) => color.clone(),
             None => Color::from_rgb(255, 255, 255),
         }
-    }
-    
-    pub fn bedwars_level(&self) -> i32 {
-        self.achievements.bedwars_level
     }
 }
 

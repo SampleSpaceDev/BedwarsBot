@@ -1,5 +1,5 @@
 use std::default::Default;
-use crate::types::ui::canvas::{Canvas, BACKUP_TYPEFACE};
+use crate::types::ui::canvas::{Canvas};
 use crate::services::hypixel::HypixelService;
 use crate::services::minecraft::PlayerDBService;
 use crate::{Context, Error};
