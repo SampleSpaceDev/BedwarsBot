@@ -5,6 +5,11 @@ use reqwest::Client;
 use serde::Deserialize;
 use std::sync::{Arc, Once};
 use std::time::Duration;
+use skia_safe::Color;
+use tracing::debug;
+use tracing::field::debug;
+use crate::types::ui::colors::rank_colors::{get_rank_color, RANK_COLORS};
+use crate::types::hypixel::achievements::HypixelAchievements;
 
 pub struct HypixelService {
     cache: ExpiringCache<String, HypixelPlayer>,
@@ -71,7 +76,7 @@ pub struct HypixelResponse {
     pub player: HypixelPlayer,
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Default)]
 pub struct HypixelPlayer {
     pub displayname: String,
     
@@ -90,31 +95,29 @@ pub struct HypixelPlayer {
     pub monthly_rank_color: Option<String>,
     
     pub stats: HypixelStats,
+    pub achievements: HypixelAchievements,
 }
 
 impl HypixelPlayer {
-    pub fn calculate_rank(&self) -> String {
+    pub fn calculate_rank(&self) -> String {        
+        fn is_valid(rank: &Option<String>) -> bool {
+            if let Some(value) = rank {
+                value != "NONE" && value != "NORMAL"
+            } else {
+                false
+            }
+        }
+        
         if let Some(ref prefix) = self.prefix {
             return prefix.clone();
         }
         
-        if let Some(ref rank) = self.rank {
-            return rank.clone();
-        }
-
-        if let Some(ref monthly_package_rank) = self.monthly_package_rank {
-            return monthly_package_rank.clone();
-        }
-        
-        if let Some(ref new_package_rank) = self.new_package_rank {
-            return new_package_rank.clone();
-        }
-        
-        if let Some(ref package_rank) = self.package_rank {
-            return package_rank.clone();
-        }
-        
-        "".to_string()
+        [self.rank.as_ref(), self.monthly_package_rank.as_ref(), self.new_package_rank.as_ref(), self.package_rank.as_ref()]
+            .into_iter()
+            .flatten()
+            .find(|rank| is_valid(&Some(rank.to_string())))
+            .cloned()
+            .unwrap_or_else(|| "DEFAULT".to_string())
     }
     
     pub fn rank_formatted(&self) -> String {
@@ -124,11 +127,11 @@ impl HypixelPlayer {
             todo!("Implement prefix conversion");
         }
 
-        let rank_color: String = self.monthly_rank_color.clone().unwrap();
-        let plus_color: String = self.rank_plus_color.clone().unwrap();
+        let rank_color: String = self.monthly_rank_color.clone().or_else(|| { Some("gold".to_string()) }).unwrap();
+        let plus_color: String = self.rank_plus_color.clone().or_else(|| { Some("red".to_string()) }).unwrap();
         
         let superstar = format!("<{0}>[MVP<{1}>++</{1}>]", rank_color, plus_color);
-        let mvp_plus = format!("<aqua>[MVP<{0}>+</{0}>]", rank_color);
+        let mvp_plus = format!("<aqua>[MVP<{0}>+</{0}>]", plus_color);
         
         match rank.as_str() {
             "ADMIN" => "<red>[ADMIN]",
@@ -139,8 +142,29 @@ impl HypixelPlayer {
             "MVP" => "<aqua>[MVP]",
             "VIP_PLUS" => "<green>[VIP<gold>+</gold>]",
             "VIP" => "<green>[VIP]",
+            "DEFAULT" => "<gray>",
             _ => "",
         }.to_string()
-    } 
+    }
+    
+    pub fn primary_rank_color(&self) -> Color {
+        let mut rank = self.calculate_rank();
+        let rank_color: String = self.monthly_rank_color.clone().or_else(|| { Some("gold".to_string()) }).unwrap();
+        
+        if rank == "SUPERSTAR" {
+            rank = format!("SUPERSTAR_{}", rank_color);
+        }
+        
+        debug!("Rank: {}", rank);
+        
+        match get_rank_color(rank.to_uppercase().as_str()) {
+            Some(color) => color.clone(),
+            None => Color::from_rgb(255, 255, 255),
+        }
+    }
+    
+    pub fn bedwars_level(&self) -> i32 {
+        self.achievements.bedwars_level
+    }
 }
 
