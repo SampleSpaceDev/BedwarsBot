@@ -152,9 +152,9 @@ impl<'a> TextRenderer<'a> {
             if let Some(color) = run.color {
                 paint.set_color(color);
             } else {
-                paint.set_color(Color::BLACK);
+                paint.set_color(Color::WHITE);
             }
-            
+
             if shadow {
                 let offset = if text_size >= 25.0 { 2.5 } else { 2.0 };
                 

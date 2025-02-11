@@ -71,8 +71,8 @@ pub const PRESTIGES: [Prestige; 51] = [
     Prestige { name: "Eternal", color_pattern: "dark_red|dark_red|dark_purple|blue|blue|dark_blue|black", symbol: PrestigeSymbol::Fourth },
 ];
 
-pub fn get_prestige(level: i32) -> String {
-    let prestige = &PRESTIGES[min(((level / 100) as f32).floor() as i32, PRESTIGES.len() as i32 - 1) as usize];
+pub fn format_level(level: u32) -> String {
+    let prestige = &PRESTIGES[min(((level / 100) as f32).floor() as u32, PRESTIGES.len() as u32 - 1) as usize];
     
     let prestige_symbol = match prestige.symbol {
         PrestigeSymbol::First => "✫",
@@ -85,11 +85,11 @@ pub fn get_prestige(level: i32) -> String {
     let mut result = "".to_string();
     
     let colors: Vec<&str> = prestige.color_pattern.split("|").collect();
-    println!("{:?}", colors);
+    // println!("{:?}", colors);
     
     if colors.len() > 1 {
         let chars: Vec<&str> = formatted.trim().split("").filter(|c| !c.is_empty()).collect();
-        println!("{:?}", chars);
+        // println!("{:?}", chars);
 
         for i in 0..chars.len() {
             let color = colors[i];
@@ -102,4 +102,32 @@ pub fn get_prestige(level: i32) -> String {
     }
     
     result
+}
+
+const EASY_XP: [i32; 4] = [500, 1000, 2000, 3500];
+
+pub fn get_level(experience: u32) -> f32 {
+    let mut remaining_xp: f32 = experience as f32;
+    let mut level: f32 = 0.0;
+    let mut delta_xp: f32 = EASY_XP[0] as f32;
+
+    while remaining_xp > 0.0 {
+        delta_xp = 5000.0;
+        if (level % 100.0) < 4.0 {
+            delta_xp = EASY_XP[(level % 100.0) as usize] as f32;
+        }
+        remaining_xp = remaining_xp - delta_xp;
+        level += 1.0;
+    }
+
+    level + (remaining_xp / delta_xp)
+}
+
+pub fn get_prestige_progress(experience: u32) -> String {
+    let level = get_level(experience);
+    let prestige = format_level(((level.floor() / 100.0).ceil() * 100.0) as u32);
+
+    let progress = (((experience as f32) % 487000.0) / 487000.0) * 100.0;
+
+    format!("<white>Progress to</white> {prestige}<gray>: <green>{progress:.1}</green>%</gray>")
 }

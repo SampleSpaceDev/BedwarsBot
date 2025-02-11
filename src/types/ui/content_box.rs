@@ -256,7 +256,7 @@ impl ImageContent {
     
     pub fn render(&self, canvas: &mut Canvas, inner_width: f32, inner_height: f32) {
         let image = Image::from_encoded(Data::new_copy(&self.bytes)).expect("Failed to decode image.");
-        
+
         let adjusted_x = match self.alignment {
             Alignment::Left => self.x,
             Alignment::Center => (inner_width - image.width() as f32) / 2.0 + self.x,

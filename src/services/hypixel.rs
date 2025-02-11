@@ -1,14 +1,13 @@
 use crate::types::cache::ExpiringCache;
 use crate::types::error::MinecraftError;
+use crate::types::hypixel::achievements::HypixelAchievements;
 use crate::types::hypixel::stats::HypixelStats;
+use crate::types::ui::colors::rank_colors::get_rank_color;
 use reqwest::Client;
 use serde::Deserialize;
+use skia_safe::Color;
 use std::sync::{Arc, Once};
 use std::time::Duration;
-use skia_safe::Color;
-use tracing::debug;
-use crate::types::ui::colors::rank_colors::{get_rank_color};
-use crate::types::hypixel::achievements::HypixelAchievements;
 
 pub struct HypixelService {
     cache: ExpiringCache<String, HypixelPlayer>,
@@ -55,7 +54,11 @@ impl HypixelService {
 
     pub async fn get_hypixel_data_api(&self, uuid: &str) -> Result<HypixelPlayer, MinecraftError> {
         let url = format!("https://api.hypixel.net/player?uuid={}", uuid);
-
+    
+        // let dummy = "{ \"player\": { \"stats\": { \"Bedwars\": { \"Experience\": 8384891 } } } }";
+        // let json: HypixelResponse = serde_json::from_str(dummy)?;
+        // debug!("{json:?}");
+        
         let response: HypixelResponse = Client::new()
             .get(&url)
             .header("API-Key", &self.api_key)
@@ -64,6 +67,8 @@ impl HypixelService {
             .json()
             .await?;
 
+        // debug!("{response:?}");
+    
         Ok(response.player)
     }
 }
@@ -154,7 +159,7 @@ impl HypixelPlayer {
             rank = format!("SUPERSTAR_{}", rank_color);
         }
         
-        debug!("Rank: {}", rank);
+        // debug!("Rank: {}", rank);
         
         match get_rank_color(rank.to_uppercase().as_str()) {
             Some(color) => color.clone(),

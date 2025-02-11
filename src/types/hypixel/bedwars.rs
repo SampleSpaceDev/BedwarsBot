@@ -1,9 +1,41 @@
 use serde::Deserialize;
 
+pub trait Ratioable {
+    fn kdr(&self) -> f32;
+    fn fkdr(&self) -> f32;
+    fn bblr(&self) -> f32;
+    fn wlr(&self) -> f32;
+}
+
+macro_rules! impl_ratios {
+    ($($struct:ident),+) => {
+        $(
+            impl Ratioable for $struct {
+                fn kdr(&self) -> f32 {
+                    self.kills as f32 / self.deaths as f32
+                }
+                
+                fn fkdr(&self) -> f32 {
+                    self.final_kills as f32 / self.final_deaths as f32
+                }
+                
+                fn bblr(&self) -> f32 {
+                    self.beds_broken as f32 / self.beds_lost as f32
+                }
+                
+                fn wlr(&self) -> f32 {
+                    self.wins as f32 / self.losses as f32
+                }
+            }
+        )+
+    };
+}
+impl_ratios!(HypixelBedwarsOverall, HypixelBedwarsSolo, HypixelBedwarsDoubles, HypixelBedwarsThrees, HypixelBedwarsFours);
+
 #[derive(Clone, Deserialize, Debug, Default)]
 pub struct HypixelBedwars {
-    // #[serde(rename = "Experience")]
-    // pub experience: u64,
+    #[serde(rename = "Experience")]
+    pub experience: f32,
     
     #[serde(flatten)]
     pub overall: HypixelBedwarsOverall,
@@ -38,19 +70,20 @@ pub struct HypixelBedwarsOverall {
     pub beds_lost: u32,
 
     #[serde(rename = "iron_resources_collected_bedwars", default = "default_number")]
-    pub iron_resources_collected: u32,
+    pub iron_collected: u32,
     #[serde(rename = "gold_resources_collected_bedwars", default = "default_number")]
-    pub gold_resources_collected: u32,
+    pub gold_collected: u32,
     #[serde(rename = "diamond_resources_collected_bedwars", default = "default_number")]
-    pub diamond_resources_collected: u32,
+    pub diamond_collected: u32,
     #[serde(rename = "emerald_resources_collected_bedwars", default = "default_number")]
-    pub emerald_resources_collected: u32,
+    pub emerald_collected: u32,
 
     #[serde(rename = "games_played_bedwars", default = "default_number")]
     pub games_played: u32,
-    // #[serde(rename = "winstreak", default = "default_number")]
-    // pub winstreak: u32,
+    #[serde(rename = "winstreak", default = "default_number")]
+    pub winstreak: u32,
 }
+
 
 #[derive(Clone, Deserialize, Debug, Default)]
 pub struct HypixelBedwarsSolo {
@@ -72,13 +105,13 @@ pub struct HypixelBedwarsSolo {
     pub beds_lost: u32,
 
     #[serde(rename = "eight_one_iron_resources_collected_bedwars", default)]
-    pub iron_resources_collected: u32,
+    pub iron_collected: u32,
     #[serde(rename = "eight_one_gold_resources_collected_bedwars", default)]
-    pub gold_resources_collected: u32,
+    pub gold_collected: u32,
     #[serde(rename = "eight_one_diamond_resources_collected_bedwars", default)]
-    pub diamond_resources_collected: u32,
+    pub diamond_collected: u32,
     #[serde(rename = "eight_one_emerald_resources_collected_bedwars", default)]
-    pub emerald_resources_collected: u32,
+    pub emerald_collected: u32,
 
     #[serde(rename = "eight_one_games_played_bedwars", default)]
     pub games_played: u32,
@@ -106,13 +139,13 @@ pub struct HypixelBedwarsDoubles {
     pub beds_lost: u32,
 
     #[serde(rename = "eight_two_iron_resources_collected_bedwars", default)]
-    pub iron_resources_collected: u32,
+    pub iron_collected: u32,
     #[serde(rename = "eight_two_gold_resources_collected_bedwars", default)]
-    pub gold_resources_collected: u32,
+    pub gold_collected: u32,
     #[serde(rename = "eight_two_diamond_resources_collected_bedwars", default)]
-    pub diamond_resources_collected: u32,
+    pub diamond_collected: u32,
     #[serde(rename = "eight_two_emerald_resources_collected_bedwars", default)]
-    pub emerald_resources_collected: u32,
+    pub emerald_collected: u32,
 
     #[serde(rename = "eight_two_games_played_bedwars", default)]
     pub games_played: u32,
@@ -140,13 +173,13 @@ pub struct HypixelBedwarsThrees {
     pub beds_lost: u32,
 
     #[serde(rename = "four_three_iron_resources_collected_bedwars", default)]
-    pub iron_resources_collected: u32,
+    pub iron_collected: u32,
     #[serde(rename = "four_three_gold_resources_collected_bedwars", default)]
-    pub gold_resources_collected: u32,
+    pub gold_collected: u32,
     #[serde(rename = "four_three_diamond_resources_collected_bedwars", default)]
-    pub diamond_resources_collected: u32,
+    pub diamond_collected: u32,
     #[serde(rename = "four_three_emerald_resources_collected_bedwars", default)]
-    pub emerald_resources_collected: u32,
+    pub emerald_collected: u32,
 
     #[serde(rename = "four_three_games_played_bedwars", default)]
     pub games_played: u32,
@@ -174,13 +207,13 @@ pub struct HypixelBedwarsFours {
     pub beds_lost: u32,
 
     #[serde(rename = "four_four_iron_resources_collected_bedwars", default)]
-    pub iron_resources_collected: u32,
+    pub iron_collected: u32,
     #[serde(rename = "four_four_gold_resources_collected_bedwars", default)]
-    pub gold_resources_collected: u32,
+    pub gold_collected: u32,
     #[serde(rename = "four_four_diamond_resources_collected_bedwars", default)]
-    pub diamond_resources_collected: u32,
+    pub diamond_collected: u32,
     #[serde(rename = "four_four_emerald_resources_collected_bedwars", default)]
-    pub emerald_resources_collected: u32,
+    pub emerald_collected: u32,
 
     #[serde(rename = "four_four_games_played_bedwars", default)]
     pub games_played: u32,
